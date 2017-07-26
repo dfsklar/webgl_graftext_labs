@@ -1,1 +1,3 @@
-# webgl_graftext_labs
+From:
+
+http://multivis.net/lecture/phong.html
