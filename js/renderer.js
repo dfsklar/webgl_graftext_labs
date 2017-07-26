@@ -6,6 +6,7 @@ function Renderer(canvasName, vertSrc, fragSrc)
     this.t = 0.0;
     this.modeVal = 1;
     this.lightPos = [1.0, 1.0, -1.0];
+    this.lightingColor = [1.0, 0.5, 0.5];
     this.lightVec = new Float32Array(3);
     this.ambientColor = [0.2, 0.0, 0.0];
     this.diffuseColor = [0.5, 0.0, 0.0];
@@ -42,6 +43,7 @@ function Renderer(canvasName, vertSrc, fragSrc)
     var shininessLoc = 0;
     var lightPosLoc = 0;
     var lightVecLoc = 0;
+    var lightingColorLoc = 0;
     var ambientColorLoc = 0;
     var diffuseColorLoc = 0;
     var specularColorLoc = 0;
@@ -186,6 +188,7 @@ function Renderer(canvasName, vertSrc, fragSrc)
         if(lightPosLoc != -1) gl.uniform3fv(lightPosLoc, this.lightPos);
         if(lightVecLoc != -1) gl.uniform3fv(lightVecLoc, this.lightVec);
         if(ambientColorLoc != -1) gl.uniform3fv(ambientColorLoc, this.ambientColor);
+        if(ambientColorLoc != -1) gl.uniform3fv(lightingColorLoc, this.lightingColor);
         if(diffuseColorLoc != -1) gl.uniform3fv(diffuseColorLoc, this.diffuseColor);
         if(specularColorLoc != -1) gl.uniform3fv(specularColorLoc, this.specularColor);
 
