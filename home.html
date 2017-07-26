@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>WebGL - Phong Shading</title>
+<link href='css/colorpicker.css' type='text/css' rel='stylesheet'/>
+<link href='css/jquery-ui-1.8.13.custom.css' type='text/css' rel='stylesheet' />
+<link href='css/style.css' type='text/css' rel='stylesheet' />
+<script type='text/javascript' src='js/jquery-1.5.1.min.js'></script>
+<script type='text/javascript' src='js/jquery-ui-1.8.13.custom.min.js'></script>
+<script type='text/javascript' src='js/colorpicker.js'></script>
+<script type="text/javascript" src="js/renderer.js"></script>
+<script type="text/javascript">
+var renderer = 0;
+
+function run() {
+  var id = document.getElementById("select_example_id").value;
+  var vertSrc = document.getElementById("code_vert").text;
+  var fracSrc = document.getElementById((id == "1") ? "PhongFrag" : "PhongTemplateFrag").value;
+
+  document.getElementById("code_frag").value = fracSrc;
+  renderer = new Renderer("myWebGLCanvas", vertSrc, fracSrc);
+  renderer.init();
+}
+
+function updateRenderer() {
+  var vertSrc = document.getElementById("code_vert").text;
+  var fragSrc = document.getElementById("code_frag").value;
+
+  renderer.updateShader(vertSrc, fragSrc);
+  renderer.display();
+}
+
+var interval = setInterval(timerFunc, 40);
+
+function timerFunc() {
+  var offset = 1.0;
+  renderer.t += offset;
+  renderer.display();
+}
+
+function modeChanged() {
+  var d = document.getElementById("select_id").value;
+  renderer.modeVal = d;
+}
+
+function modelChanged() {
+  var d = document.getElementById("select_id2").value;
+  renderer.updateModel(d);
+  renderer.display();
+}
+
+function exampleChanged() {
+  var d = document.getElementById("select_example_id").value;
+  document.getElementById("code_frag").value = document.getElementById((d == "1") ? "PhongFrag" : "PhongTemplateFrag").value;
+  updateRenderer();
+}
+</script>
+</head>
+<body onload="run();">
+<h1>Phong Shading (WebGL)</h1>
+Edit the shader code below and click on the button to see the result:
+<!-- Vertex program -->
+<script id="code_vert" type="x-shader/x-vertex">
+attribute vec3 inputPosition;
+attribute vec2 inputTexCoord;
+attribute vec3 inputNormal;
+
+uniform mat4 projection, modelview, normalMat;
+
+varying vec3 normalInterp;
+varying vec3 vertPos;
+
+void main(){
+  vec4 vertPos4 = modelview * vec4(inputPosition, 1.0);
+  vertPos = vec3(vertPos4) / vertPos4.w;
+  normalInterp = vec3(normalMat * vec4(inputNormal, 0.0));
+  gl_Position = projection * vertPos4;
+}
+</script>
+<p id="code_vert_error" style="width: 200px;"></p>
+<table>
+<tr style="vertical-align:top;">
+<td><canvas id="myWebGLCanvas" width="600" height="400">Your browser does not support the canvas element</canvas><br>
+<select onchange="exampleChanged()" id="select_example_id">
+  <option value="1">Phong Shading</option>
+  <option value="2">Blank template</option>
+</select>
+<select onchange="modelChanged()" id="select_id2">
+  <option value="./knot.txt">Knot</option>
+  <option value="./cube.txt">Cube</option>
+  <option value="./plane.txt">Plane</option>
+  <option value="./sphere.txt">Sphere</option>
+  <option value="./hose.txt">Hose</option>
+  <option value="./teapot.txt">Teapot</option>
+</select>
+<select onchange="modeChanged()" id="select_id">
+  <option value="1">normal mode</option>
+  <option value="2">ambient only</option>
+  <option value="3">diffuse only</option>
+  <option value="4">specular only</option>
+</select>
+</td>
+<td><textarea cols="75" rows="25" class="code_input" id="code_frag" wrap="logical"></textarea><br>
+<button onclick="updateRenderer()">Reload Shader Code</button>
+<p id="code_frag_error" style="width:600px;"></p></td></tr>
+</table>
+<table>
+ <tr>
+  <td align='right'>Ambient reflection coefficient (ka):</td><td id='slider-ka-value' width='30px'>1.0</td><td><div id='slider-ka'/></td>
+  <td align='right'>Ambient color:</td><td colspan='2'><div id='colorSelectorAmbient' class='colorSelector'><div style='background-color:rgb(52,0,0)'></div></div></td>
+  <td colspan="2">&nbsp;</td>
+  <td>Light position:</td>
+ </tr>
+ <tr>
+  <td align='right'>Diffuse reflection coefficient (kd):</td><td id='slider-kd-value'  width='30px'>1.0</td><td><div id='slider-kd'/></td>
+  <td align='right'>Diffuse Color:</td><td colspan='2'><div id='colorSelectorDiffuse' class='colorSelector'><div style='background-color:rgb(128,0,0)'></div></div></td>
+  <td align='right' width="30px">X:</td><td id='slider-x-value' width='30px' align='center'>1</td><td width='150px'><div id='slider-x'/></td>
+ </tr>
+ <tr>
+  <td align='right'>Specular reflection coefficient (ks):</td><td id='slider-ks-value'  width='30px'>1.0</td><td><div id='slider-ks'/></td>
+  <td align='right'>Specular Color:</td><td colspan='2'><div id='colorSelectorSpecular' class='colorSelector'><div style='background-color:rgb(256,256,256)'></div></div></td>
+  <td align='right'>Y:</td><td id='slider-y-value'  width='30px' align='center'>1</td><td width='150px'><div id='slider-y'/></td>
+ </tr>
+ <tr>
+  <td align='right'>Shininess:</td><td id='slider-s-value' width='30px'>4</td><td width='150px'><div id='slider-s'/></td>
+  <td>&nbsp;Background Color:</td><td colspan='2'><div id='colorSelectorBg' class='colorSelector'><div style='background-color:rgb(128,128,128)'></div></div></td>
+  <td align='right'>Z:</td> <td id='slider-z-value'  width='30px' align='center'>-1</td><td width='150px'><div id='slider-z'/></td>
+ </tr>
+</table>
+<script>
+$('#slider-s').slider({value:4, min:1, max:128, step:1, range:"min", slide:updateShininess});
+$('#slider-ka').slider({value:1, max:1, step:0.01, range:"min", slide:updateLightAmbientTerm});
+$('#slider-kd').slider({value:1, max:1, step:0.01, range:"min", slide:updateLightDiffuseTerm});
+$('#slider-ks').slider({value:1, max:1, step:0.01, range:"min", slide:updateLightSpecularTerm});
+$('#slider-x').slider({value:1, min:-10, max:10, step:0.1, slide:updateLight, change:updateLight});
+$('#slider-y').slider({value:1, min:-10, max:10, step:0.1, slide:updateLight, change:updateLight});
+$('#slider-z').slider({value:-1, min:-10, max:10, step:0.1, slide:updateLight, change:updateLight});
+
+function updateShininess(event, ui){
+  renderer.shininess = ui.value;
+  $('#slider-s-value').html(ui.value);
+}
+function updateLightAmbientTerm(event, ui){
+  renderer.kaVal = ui.value;
+  $('#slider-ka-value').html(ui.value);
+}
+function updateLightDiffuseTerm(event, ui){
+  renderer.kdVal = ui.value;
+  $('#slider-kd-value').html(ui.value);
+}
+function updateLightSpecularTerm(event, ui){
+  renderer.ksVal = ui.value;
+  $('#slider-ks-value').html(ui.value);
+}
+
+function updateLight(){
+  var x = $('#slider-x').slider("value");
+  var y = $('#slider-y').slider("value");
+  var z = $('#slider-z').slider("value");
+  renderer.lightPos = [x,y,z];
+  $('#slider-x-value').html(x);
+  $('#slider-y-value').html(y);
+  $('#slider-z-value').html(z);
+}
+
+function updateClearColor(r,g,b){
+  clearColor = [r,g,b,1.0];
+}
+
+$('#colorSelectorAmbient').ColorPicker({
+  onSubmit: function(hsb, hex, rgb, el) {
+    $(el).val(hex);
+    $(el).ColorPickerHide();
+  },
+  color: '#340000',
+  onShow: function (colpkr) {
+    $(colpkr).fadeIn(500);
+    return false;
+  },
+  onHide: function (colpkr) {
+    $(colpkr).fadeOut(500);
+    return false;
+  },
+  onChange: function (hsb, hex, rgb) {
+    $('#colorSelectorAmbient div').css('backgroundColor', '#' + hex);
+    renderer.ambientColor = [rgb.r/256, rgb.g/256, rgb.b/256];
+  },
+  onBeforeShow: function (colpkr) {
+    $(colpkr).ColorPickerSetColor('rgb(0.2,0.0,0.0)');
+  }
+})
+
+$('#colorSelectorDiffuse').ColorPicker({
+  onSubmit: function(hsb, hex, rgb, el) {
+    $(el).val(hex);
+    $(el).ColorPickerHide();
+  },
+  color: '#800000',
+  onShow: function (colpkr) {
+    $(colpkr).fadeIn(500);
+    return false;
+  },
+  onHide: function (colpkr) {
+    $(colpkr).fadeOut(500);
+    return false;
+  },
+  onChange: function (hsb, hex, rgb) {
+    $('#colorSelectorDiffuse div').css('backgroundColor', '#' + hex);
+    renderer.diffuseColor = [rgb.r/256,rgb.g/256,rgb.b/256];
+  },
+  onBeforeShow: function (colpkr) {
+    $(colpkr).ColorPickerSetColor('rgb(0.5,0.0,0.0)');
+  }
+})
+
+$('#colorSelectorSpecular').ColorPicker({
+  onSubmit: function(hsb, hex, rgb, el) {
+    $(el).val(hex);
+    $(el).ColorPickerHide();
+  },
+  color: '#ffffff',
+  onShow: function (colpkr) {
+    $(colpkr).fadeIn(500);
+    return false;
+  },
+  onHide: function (colpkr) {
+    $(colpkr).fadeOut(500);
+    return false;
+  },
+  onChange: function (hsb, hex, rgb) {
+    $('#colorSelectorSpecular div').css('backgroundColor', '#' + hex);
+    renderer.specularColor = [rgb.r/256,rgb.g/256,rgb.b/256];
+  },
+  onBeforeShow: function (colpkr) {
+    $(colpkr).ColorPickerSetColor('rgb(1.0,1.0,1.0)');
+  }
+})
+
+$('#colorSelectorBg').ColorPicker({
+  onSubmit: function(hsb, hex, rgb, el) {
+   $(el).val(hex);
+   $(el).ColorPickerHide();
+ },
+ color: '#808080',
+ onShow: function (colpkr) {
+   $(colpkr).fadeIn(500);
+  return false;
+  },
+  onHide: function (colpkr) {
+    $(colpkr).fadeOut(500);
+    return false;
+  },
+  onChange: function (hsb, hex, rgb) {
+    $('#colorSelectorBg div').css('backgroundColor', '#' + hex);
+    renderer.clearColor = [rgb.r/256,rgb.g/256,rgb.b/256];
+  },
+  onBeforeShow: function (colpkr) {
+    $(colpkr).ColorPickerSetColor('rgb(0.5,0.5,0.5)');
+  }
+})
+</script>
+
+<p>Based on a <a target="_blank"
+  href="http://www.mathematik.uni-marburg.de/~thormae/lectures/graphics1/code/WebGLShaderLightMat/ShaderLightMat.html">WebGL applet</a> by <a
+  href="http://www.uni-marburg.de/fb12/grafikmultimedia-en/team/thormae-en" target="_blank">Prof. Thorsten Thorm&auml;hlen</a>.
+  Modified by <a href="http://wwwcg.in.tum.de/group/persons/kehrer.html" target="_blank">Johannes Kehrer</a> for educational purpose.</p>
+<textarea id="PhongFrag" style="display: none;">
+precision mediump float;
+
+varying vec3 normalInterp;  // Surface normal
+varying vec3 vertPos;       // Vertex position
+
+uniform int mode;   // Rendering mode
+uniform float Ka;   // Ambient reflection coefficient
+uniform float Kd;   // Diffuse reflection coefficient
+uniform float Ks;   // Specular reflection coefficient
+uniform float shininessVal; // Shininess
+
+// Material color
+uniform vec3 ambientColor;
+uniform vec3 diffuseColor;
+uniform vec3 specularColor;
+
+uniform vec3 lightPos; // Light position
+
+void main() {
+  vec3 N = normalize(normalInterp);
+  vec3 L = normalize(lightPos - vertPos);
+
+  // Lambert's cosine law
+  float lambertian = max(dot(N, L), 0.0);
+
+  float specular = 0.0;
+
+  if(lambertian > 0.0) {
+    vec3 R = reflect(-L, N);      // Reflected light vector
+    vec3 V = normalize(-vertPos); // Vector to viewer
+
+    // Compute the specular term
+    float specAngle = max(dot(R, V), 0.0);
+    specular = pow(specAngle, shininessVal);
+  }
+  gl_FragColor = vec4(Ka * ambientColor +
+                      Kd * lambertian * diffuseColor +
+                      Ks * specular * specularColor, 1.0);
+
+  // only ambient
+  if(mode == 2) gl_FragColor = vec4(Ka * ambientColor, 1.0);
+  // only diffuse
+  if(mode == 3) gl_FragColor = vec4(Kd * lambertian * diffuseColor, 1.0);
+  // only specular
+  if(mode == 4) gl_FragColor = vec4(Ks * specular * specularColor, 1.0);
+}
+</textarea>
+<textarea id="PhongTemplateFrag" style="display: none;">
+precision mediump float;
+
+varying vec3 normalInterp;  // Surface normal
+varying vec3 vertPos;       // Vertex position
+
+uniform int mode;   // Rendering mode
+uniform float Ka;   // Ambient reflection coefficient
+uniform float Kd;   // Diffuse reflection coefficient
+uniform float Ks;   // Specular reflection coefficient
+uniform float shininessVal; // Shininess
+
+// Material color
+uniform vec3 ambientColor;
+uniform vec3 diffuseColor;
+uniform vec3 specularColor;
+
+uniform vec3 lightPos; // Light position
+
+void main() {
+  vec3 N = normalize(normalInterp);
+  vec3 L = normalize(lightPos - vertPos); // Vector to light
+  vec3 V = normalize(-vertPos);           // Vector to viewer
+
+  // Lambert's cosine law
+  float lambertian = 0.0;
+  float specular = 0.0;
+
+  gl_FragColor = vec4(Ka * ambientColor +
+                      Kd * lambertian * diffuseColor +
+                      Ks * specular * specularColor, 1.0);
+}
+</textarea>
+</body>
+</html>
