@@ -313,7 +313,7 @@
 
         mat4.translate(mvMatrix,   mvMatrix, [0, 0, -6]);
 
-        mat4.multiply(moonRotationMatrix,   mvMatrix, moonRotationMatrix);
+        mat4.multiply(mvMatrix,   mvMatrix, moonRotationMatrix);
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, moonTexture);
