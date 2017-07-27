@@ -153,6 +153,7 @@
     var lastMouseY = null;
 
     var moonRotationMatrix = mat4.create(); // initialized automatically to identity
+    var cameraExtraRotationMatrix = mat4.create(); // initialized automatically to identity
 
     function handleMouseDown(event) {
         mouseDown = true;
@@ -167,7 +168,7 @@
 
 
     // This version modifies the current moonRotationMatrix, which is a MODEL transformation.
-    function handleMouseMove(event) {
+    function handleMouseMove_MODEL(event) {
         if (!mouseDown) {
             return;
         }
@@ -188,6 +189,32 @@
             lastMouseY = newY;
         }
     }
+
+    function handleMouseMove_CAMERA(event) {
+        if (!mouseDown) {
+            return;
+        }
+        var newX = event.clientX;
+        var newY = event.clientY;
+
+        var deltaX = newX - lastMouseX
+        var deltaY = newY - lastMouseY;
+
+        if ((deltaX!=0) || (deltaY!=0)) {
+            var newRotationMatrix = mat4.create();
+            mat4.rotate(newRotationMatrix,   newRotationMatrix, degToRad(deltaX / 10), [0, 1, 0]);
+            mat4.rotate(newRotationMatrix,   newRotationMatrix, degToRad(deltaY / 10), [1, 0, 0]);
+            // mult(OUT, in1, in2)
+            mat4.multiply(cameraExtraRotationMatrix,   newRotationMatrix, cameraExtraRotationMatrix);
+
+            lastMouseX = newX
+            lastMouseY = newY;
+        }
+    }
+
+function handleMouseMove(event) {
+    return handleMouseMove_CAMERA(event);
+}
 
 
 
@@ -280,7 +307,6 @@
         // fieldOfViewRadians, aspect, zNear, zFar
         mat4.perspective(pMatrix,   45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
 
-
         var lighting = document.getElementById("lighting").checked;
         gl.uniform1i(shaderProgram.useLightingUniform, lighting);
         if (lighting) {
@@ -311,9 +337,9 @@
 
         mat4.identity(mvMatrix);
 
-        mat4.translate(mvMatrix,   mvMatrix, [0, 0, -6]);
-
-        mat4.multiply(mvMatrix,   mvMatrix, moonRotationMatrix);
+        mat4.multiply(mvMatrix,   mvMatrix, cameraExtraRotationMatrix);   // 3. Reposition the camera
+        mat4.translate(mvMatrix,   mvMatrix, [0, 0, -6]);         // 2. Translate away from the origin to Z=-6
+        mat4.multiply(mvMatrix,   mvMatrix, moonRotationMatrix);  // 1. Rotate the moon around the origin
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, moonTexture);
@@ -334,10 +360,20 @@
     }
 
 
-    function tick() {
-        requestAnimFrame(tick);
-        drawScene();
-    }
+function rotateModel() {
+    var newRotationMatrix = mat4.create();
+    mat4.rotate(newRotationMatrix,   newRotationMatrix, degToRad(1 / 10), [0, 1, 0]);
+    //mat4.rotate(newRotationMatrix,   newRotationMatrix, degToRad(deltaY / 10), [1, 0, 0]);
+    // mult(OUT, in1, in2)
+    mat4.multiply(moonRotationMatrix,   newRotationMatrix, moonRotationMatrix);
+}
+
+function tick() {
+    // built-in JS function:
+    requestAnimationFrame(tick);
+    rotateModel();
+    drawScene();
+}
 
 
     function webGLStart() {
