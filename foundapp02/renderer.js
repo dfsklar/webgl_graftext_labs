@@ -122,8 +122,7 @@
     var pMatrix = mat4.create();
 
     function mvPushMatrix() {
-        var copy = mat4.create();
-        mat4.set(mvMatrix, copy);
+        var copy = mat4.clone(mvMatrix);
         mvMatrixStack.push(copy);
     }
 
@@ -139,8 +138,8 @@
         gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
 
         var normalMatrix = mat3.create();
-        mat4.toInverseMat3(mvMatrix, normalMatrix);
-        mat3.transpose(normalMatrix);
+        mat3.normalFromMat4(normalMatrix,  mvMatrix);
+        mat3.transpose(normalMatrix,   normalMatrix);
         gl.uniformMatrix3fv(shaderProgram.nMatrixUniform, false, normalMatrix);
     }
 
@@ -154,8 +153,7 @@
     var lastMouseX = null;
     var lastMouseY = null;
 
-    var moonRotationMatrix = mat4.create();
-    mat4.identity(moonRotationMatrix);
+    var moonRotationMatrix = mat4.create(); // initialized automatically to identity
 
     function handleMouseDown(event) {
         mouseDown = true;
@@ -179,13 +177,13 @@
 
         var deltaX = newX - lastMouseX
         var newRotationMatrix = mat4.create();
-        mat4.identity(newRotationMatrix);
-        mat4.rotate(newRotationMatrix, degToRad(deltaX / 10), [0, 1, 0]);
+        mat4.rotate(newRotationMatrix,   newRotationMatrix, degToRad(deltaX / 10), [0, 1, 0]);
 
         var deltaY = newY - lastMouseY;
-        mat4.rotate(newRotationMatrix, degToRad(deltaY / 10), [1, 0, 0]);
+        mat4.rotate(newRotationMatrix,   newRotationMatrix, degToRad(deltaY / 10), [1, 0, 0]);
 
-        mat4.multiply(newRotationMatrix, moonRotationMatrix, moonRotationMatrix);
+        // mult(OUT, in1, in2)
+        mat4.multiply(moonRotationMatrix,   newRotationMatrix, moonRotationMatrix);
 
         lastMouseX = newX
         lastMouseY = newY;
@@ -280,9 +278,7 @@
 
         // Playing with the first number made the camera approach or withdraw from the moon
         // fieldOfViewRadians, aspect, zNear, zFar
-        mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
-        mat4.yRotation(
-
+        mat4.perspective(pMatrix,   45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
 
 
         var lighting = document.getElementById("lighting").checked;
@@ -315,9 +311,9 @@
 
         mat4.identity(mvMatrix);
 
-        mat4.translate(mvMatrix, [0, 0, -6]);
+        mat4.translate(mvMatrix,   mvMatrix, [0, 0, -6]);
 
-        mat4.multiply(mvMatrix, moonRotationMatrix);
+        mat4.multiply(moonRotationMatrix,   mvMatrix, moonRotationMatrix);
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, moonTexture);
