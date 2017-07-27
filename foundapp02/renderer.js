@@ -139,7 +139,6 @@
 
         var normalMatrix = mat3.create();
         mat3.normalFromMat4(normalMatrix,  mvMatrix);
-        mat3.transpose(normalMatrix,   normalMatrix);
         gl.uniformMatrix3fv(shaderProgram.nMatrixUniform, false, normalMatrix);
     }
 
@@ -176,17 +175,18 @@
         var newY = event.clientY;
 
         var deltaX = newX - lastMouseX
-        var newRotationMatrix = mat4.create();
-        mat4.rotate(newRotationMatrix,   newRotationMatrix, degToRad(deltaX / 10), [0, 1, 0]);
-
         var deltaY = newY - lastMouseY;
-        mat4.rotate(newRotationMatrix,   newRotationMatrix, degToRad(deltaY / 10), [1, 0, 0]);
 
-        // mult(OUT, in1, in2)
-        mat4.multiply(moonRotationMatrix,   newRotationMatrix, moonRotationMatrix);
+        if ((deltaX!=0) || (deltaY!=0)) {
+            var newRotationMatrix = mat4.create();
+            mat4.rotate(newRotationMatrix,   newRotationMatrix, degToRad(deltaX / 10), [0, 1, 0]);
+            mat4.rotate(newRotationMatrix,   newRotationMatrix, degToRad(deltaY / 10), [1, 0, 0]);
+            // mult(OUT, in1, in2)
+            mat4.multiply(moonRotationMatrix,   newRotationMatrix, moonRotationMatrix);
 
-        lastMouseX = newX
-        lastMouseY = newY;
+            lastMouseX = newX
+            lastMouseY = newY;
+        }
     }
 
 
@@ -297,8 +297,8 @@
                 parseFloat(document.getElementById("lightDirectionZ").value)
             ];
             var adjustedLD = vec3.create();
-            vec3.normalize(lightingDirection, adjustedLD);
-            vec3.scale(adjustedLD, -1);
+            vec3.normalize(adjustedLD,  lightingDirection);
+            vec3.scale(adjustedLD,   adjustedLD, -1);
             gl.uniform3fv(shaderProgram.lightingDirectionUniform, adjustedLD);
 
             gl.uniform3f(
