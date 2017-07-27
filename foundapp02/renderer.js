@@ -281,9 +281,6 @@
         // Playing with the first number made the camera approach or withdraw from the moon
         // fieldOfViewRadians, aspect, zNear, zFar
         mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
-        mat4.yRotation(
-
-
 
         var lighting = document.getElementById("lighting").checked;
         gl.uniform1i(shaderProgram.useLightingUniform, lighting);
