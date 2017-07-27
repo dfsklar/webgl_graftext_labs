@@ -75,9 +75,15 @@
         shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
         gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
 
+        // ASSUMPTION:  The pMatrix is possibly the PROJECTION MATRIX
         shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+
+        // The MODEL-VIEW MATRIX
         shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+
+        // The NORMAL-transformation MATRIX
         shaderProgram.nMatrixUniform = gl.getUniformLocation(shaderProgram, "uNMatrix");
+
         shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
         shaderProgram.useLightingUniform = gl.getUniformLocation(shaderProgram, "uUseLighting");
         shaderProgram.ambientColorUniform = gl.getUniformLocation(shaderProgram, "uAmbientColor");
@@ -163,6 +169,7 @@
     }
 
 
+    // This version modifies the current moonRotationMatrix, which is a MODEL transformation.
     function handleMouseMove(event) {
         if (!mouseDown) {
             return;
@@ -271,7 +278,12 @@
         gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+        // Playing with the first number made the camera approach or withdraw from the moon
+        // fieldOfViewRadians, aspect, zNear, zFar
         mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
+        mat4.yRotation(
+
+
 
         var lighting = document.getElementById("lighting").checked;
         gl.uniform1i(shaderProgram.useLightingUniform, lighting);
