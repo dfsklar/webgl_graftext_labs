@@ -376,19 +376,28 @@ function tick() {
 }
 
 
-    function webGLStart() {
-        var canvas = document.getElementById("lesson11-canvas");
-        initGL(canvas);
-        initShaders();
-        initBuffers();
-        initTexture();
+function webGLStart() {
+    var canvas = document.getElementById("lesson11-canvas");
+    initGL(canvas);
+    initShaders();
+    initBuffers();
+    initTexture();
 
-        gl.clearColor(0.0, 0.0, 0.0, 1.0);
-        gl.enable(gl.DEPTH_TEST);
+    var targetObject = {
+        position: vec3.create(),
+        up: vec3.create()
+    };
+    vec3.set(targetObject.position,   0, 0, 0);
+    vec3.set(targetObject.up,   0, 1, 0);
 
-        canvas.onmousedown = handleMouseDown;
-        document.onmouseup = handleMouseUp;
-        document.onmousemove = handleMouseMove;
+    var trackballControl = new window.TrackballControls(targetObject, canvas);
 
-        tick();
-    }
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.enable(gl.DEPTH_TEST);
+
+    canvas.onmousedown = handleMouseDown;
+    document.onmouseup = handleMouseUp;
+    document.onmousemove = handleMouseMove;
+
+    tick();
+}

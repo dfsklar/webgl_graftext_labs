@@ -101,16 +101,12 @@ window.TrackballControls = function ( object, domElement ) {
 	// methods
 
 	this.handleResize = function () {
-
 		if ( this.domElement === document ) {
-
 			this.screen.left = 0;
 			this.screen.top = 0;
 			this.screen.width = window.innerWidth;
 			this.screen.height = window.innerHeight;
-
 		} else {
-
 			var box = this.domElement.getBoundingClientRect();
 			// adjustments come from similar code in the jquery offset() function
 			var d = this.domElement.ownerDocument.documentElement;
@@ -118,36 +114,29 @@ window.TrackballControls = function ( object, domElement ) {
 			this.screen.top = box.top + window.pageYOffset - d.clientTop;
 			this.screen.width = box.width;
 			this.screen.height = box.height;
-
 		}
-
 	};
+
+
 
 	this.handleEvent = function ( event ) {
-
 		if ( typeof this[ event.type ] == 'function' ) {
-
 			this[ event.type ]( event );
-
 		}
-
 	};
 
+
+
+
 	var getMouseOnScreen = ( function () {
-
 		var vector = vec2.create();
-
 		return function getMouseOnScreen( pageX, pageY ) {
-
 			vec2.set(vector,
 				( pageX - _this.screen.left ) / _this.screen.width,
 				( pageY - _this.screen.top ) / _this.screen.height
 			);
-
 			return vector;
-
 		};
-
 	}() );
 
 
@@ -155,20 +144,14 @@ window.TrackballControls = function ( object, domElement ) {
 
 
 	var getMouseOnCircle = ( function () {
-
 		var vector = vec2.create();
-
 		return function getMouseOnCircle( pageX, pageY ) {
-
 			vec2.set(vector,
 				( ( pageX - _this.screen.width * 0.5 - _this.screen.left ) / ( _this.screen.width * 0.5 ) ),
 				( ( _this.screen.height + 2 * ( _this.screen.top - pageY ) ) / _this.screen.width ) // screen.width intentional
 			);
-
 			return vector;
-
 		};
-
 	}() );
 
 
@@ -238,33 +221,20 @@ window.TrackballControls = function ( object, domElement ) {
 	this.zoomCamera = function () {
 
 		var factor;
-
 		if ( _state === STATE.TOUCH_ZOOM_PAN ) {
-
 			factor = _touchZoomDistanceStart / _touchZoomDistanceEnd;
 			_touchZoomDistanceStart = _touchZoomDistanceEnd;
 			_eye.multiplyScalar( factor );
-
 		} else {
-
 			factor = 1.0 + ( _zoomEnd.y - _zoomStart.y ) * _this.zoomSpeed;
-
 			if ( factor !== 1.0 && factor > 0.0 ) {
-
 				_eye.multiplyScalar( factor );
-
 			}
-
 			if ( _this.staticMoving ) {
-
 				_zoomStart.copy( _zoomEnd );
-
 			} else {
-
 				_zoomStart.y += ( _zoomEnd.y - _zoomStart.y ) * this.dynamicDampingFactor;
-
 			}
-
 		}
 
 	};
@@ -279,7 +249,7 @@ window.TrackballControls = function ( object, domElement ) {
 			pan = vec3.create();
 
 		return function panCamera() {
-
+      return; // !!!!!!!
 			mouseChange.copy( _panEnd ).sub( _panStart );
 
 			if ( mouseChange.lengthSq() ) {
@@ -312,25 +282,16 @@ window.TrackballControls = function ( object, domElement ) {
 
 
 	this.checkDistances = function () {
-
 		if ( ! _this.noZoom || ! _this.noPan ) {
-
-			if ( _eye.lengthSq() > _this.maxDistance * _this.maxDistance ) {
-
-				_this.object.position.addVectors( _this.target, _eye.setLength( _this.maxDistance ) );
-				_zoomStart.copy( _zoomEnd );
-
+			if ( vec3.squaredLength(_eye) > _this.maxDistance * _this.maxDistance ) {
+				  vec3.add(_this.object.position,    _this.target, window.vec3extension.setLength(_eye,  _this.maxDistance));
+				  vec2.copy(_zoomStart, _zoomEnd );
 			}
-
-			if ( _eye.lengthSq() < _this.minDistance * _this.minDistance ) {
-
-				_this.object.position.addVectors( _this.target, _eye.setLength( _this.minDistance ) );
-				_zoomStart.copy( _zoomEnd );
-
+			if ( vec3.squaredLength(_eye) < _this.minDistance * _this.minDistance ) {
+				vec3.add(_this.object.position,    _this.target, window.vec3extension.setLength(_eye, _this.minDistance));
+				vec2.copy(_zoomStart, _zoomEnd );
 			}
-
 		}
-
 	};
 
 
@@ -338,31 +299,24 @@ window.TrackballControls = function ( object, domElement ) {
 
 	this.update = function () {
 
-		_eye.subVectors( _this.object.position, _this.target );
+		vec3.subtract(_eye, _this.object.position, _this.target );
 
 		if ( ! _this.noRotate ) {
-
 			_this.rotateCamera();
-
 		}
 
 		if ( ! _this.noZoom ) {
-
 			_this.zoomCamera();
-
 		}
 
 		if ( ! _this.noPan ) {
-
 			_this.panCamera();
-
 		}
 
-		_this.object.position.addVectors( _this.target, _eye );
-
+		vec3.add(_this.object.position,   _this.target, _eye );
 		_this.checkDistances();
 
-		_this.object.lookAt( _this.target );
+		// NO EQUIV?:    _this.object.lookAt( _this.target );
 
 		if ( lastPosition.distanceToSquared( _this.object.position ) > EPS ) {
 
@@ -374,24 +328,27 @@ window.TrackballControls = function ( object, domElement ) {
 
 	};
 
-	this.reset = function () {
 
+
+
+
+	this.reset = function () {
 		_state = STATE.NONE;
 		_prevState = STATE.NONE;
 
-		_this.target.copy( _this.target0 );
-		_this.object.position.copy( _this.position0 );
-		_this.object.up.copy( _this.up0 );
+		vec3.copy(_this.target, _this.target0 );
+		vec3.copy(_this.object.position, _this.position0 );
+		vec3.copy(_this.object.up,  _this.up0 );
 
-		_eye.subVectors( _this.object.position, _this.target );
+		vec3.subtract(_eye,  _this.object.position, _this.target );
 
-		_this.object.lookAt( _this.target );
-
+		// NO EQUIV?   _this.object.lookAt( _this.target );
 		_this.dispatchEvent( changeEvent );
-
 		lastPosition.copy( _this.object.position );
-
 	};
+
+
+
 
 	// listeners
 
@@ -423,15 +380,15 @@ window.TrackballControls = function ( object, domElement ) {
 
 	}
 
+
+
 	function keyup( event ) {
-
 		if ( _this.enabled === false ) return;
-
 		_state = _prevState;
-
 		window.addEventListener( 'keydown', keydown, false );
-
 	}
+
+
 
 	function mousedown( event ) {
 
@@ -441,33 +398,26 @@ window.TrackballControls = function ( object, domElement ) {
 		event.stopPropagation();
 
 		if ( _state === STATE.NONE ) {
-
 			_state = event.button;
-
 		}
 
 		if ( _state === STATE.ROTATE && ! _this.noRotate ) {
-
 			_moveCurr.copy( getMouseOnCircle( event.pageX, event.pageY ) );
 			_movePrev.copy( _moveCurr );
 
 		} else if ( _state === STATE.ZOOM && ! _this.noZoom ) {
-
 			_zoomStart.copy( getMouseOnScreen( event.pageX, event.pageY ) );
 			_zoomEnd.copy( _zoomStart );
 
 		} else if ( _state === STATE.PAN && ! _this.noPan ) {
-
 			_panStart.copy( getMouseOnScreen( event.pageX, event.pageY ) );
 			_panEnd.copy( _panStart );
-
 		}
 
 		document.addEventListener( 'mousemove', mousemove, false );
 		document.addEventListener( 'mouseup', mouseup, false );
 
 		_this.dispatchEvent( startEvent );
-
 	}
 
 
@@ -513,36 +463,40 @@ window.TrackballControls = function ( object, domElement ) {
 
 	}
 
-	function mousewheel( event ) {
 
-		if ( _this.enabled === false ) return;
 
-		event.preventDefault();
-		event.stopPropagation();
+	  function mousewheel( event ) {
 
-		switch ( event.deltaMode ) {
+		    if ( _this.enabled === false ) return;
 
-                        case 2:
-                                // Zoom in pages
-                                _zoomStart.y -= event.deltaY * 0.025;
-                                break;
+		    event.preventDefault();
+		    event.stopPropagation();
 
-			case 1:
-                                // Zoom in lines
-				_zoomStart.y -= event.deltaY * 0.01;
-				break;
+		    switch ( event.deltaMode ) {
 
-			default:
-				// undefined, 0, assume pixels
-				_zoomStart.y -= event.deltaY * 0.00025;
-				break;
+        case 2:
+            // Zoom in pages
+            _zoomStart.y -= event.deltaY * 0.025;
+            break;
 
-		}
+			  case 1:
+            // Zoom in lines
+				    _zoomStart.y -= event.deltaY * 0.01;
+				    break;
 
-		_this.dispatchEvent( startEvent );
-		_this.dispatchEvent( endEvent );
+			  default:
+				    // undefined, 0, assume pixels
+				    _zoomStart.y -= event.deltaY * 0.00025;
+				    break;
 
-	}
+		    }
+
+		    _this.dispatchEvent( startEvent );
+		    _this.dispatchEvent( endEvent );
+	  }
+
+
+
 
 	function touchstart( event ) {
 
@@ -571,8 +525,9 @@ window.TrackballControls = function ( object, domElement ) {
 		}
 
 		_this.dispatchEvent( startEvent );
-
 	}
+
+
 
 	function touchmove( event ) {
 
@@ -599,8 +554,10 @@ window.TrackballControls = function ( object, domElement ) {
 				break;
 
 		}
-
 	}
+
+
+
 
 	function touchend( event ) {
 
@@ -621,16 +578,19 @@ window.TrackballControls = function ( object, domElement ) {
 		}
 
 		_this.dispatchEvent( endEvent );
-
 	}
+
+
+
 
 	function contextmenu( event ) {
-
 		if ( _this.enabled === false ) return;
-
 		event.preventDefault();
-
 	}
+
+
+
+
 
 	this.dispose = function() {
 
