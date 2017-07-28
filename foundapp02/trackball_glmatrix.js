@@ -11,15 +11,15 @@
 /**
  * Sets the length of a vec2
  *
- * @param {vec2} out the receiving vector
- * @param {vec2} a the vector to clamp
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the vector to clamp
  * @param {number} s length
- * @returns {vec2} out
+ * @returns {vec3} out
  */
-window.vec2extension = {
-        setLength: function(out, a, s)
+window.vec3extension = {
+    setLength: function(out, a, s)
     {
-        return vec2.scale(out, a, s / Math.sqrt(a[0] * a[0] + a[1] * a[1]));
+        return vec3.scale(out, vec3.normalize(out, a), s);
     }
 
 };
@@ -199,33 +199,33 @@ window.TrackballControls = function ( object, domElement ) {
         vec3.cross(cross,   objectUpDirection, eyeDirection);
         vec3.normalize(objectSidewaysDirection,   cross);
 
-				window.vec2extension.setLength(objectUpDirection,  objectUpDirection, ( _moveCurr.y - _movePrev.y ));
+				window.vec3extension.setLength(objectUpDirection,  objectUpDirection, ( _moveCurr.y - _movePrev.y ));
 				window.vec2extension.setLength(objectSidewaysDirection,   objectSidewaysDirection, ( _moveCurr.x - _movePrev.x ));
 
-				moveDirection.copy( objectUpDirection.add( objectSidewaysDirection ) );
+				vec3.add(moveDirection,    objectUpDirection, objectSidewaysDirection);
 
-				axis.crossVectors( moveDirection, _eye ).normalize();
+				vec3.normalize(axis,  vec3.crossVectors(axis,    moveDirection, _eye ));
 
 				angle *= _this.rotateSpeed;
-				quaternion.setFromAxisAngle( axis, angle );
+				quat.setAxisAngle(quaternion,    axis, angle);
 
-				_eye.applyQuaternion( quaternion );
-				_this.object.up.applyQuaternion( quaternion );
+				vec3.transformQuat(_eye,   _eye, quaternion);
+				vec3.transformQuat(_this.object.up,   _this.object.up, quaternion);
 
-				_lastAxis.copy( axis );
+				vec3.clone(_lastAxis,  axis);
 				_lastAngle = angle;
 
 			} else if ( ! _this.staticMoving && _lastAngle ) {
 
 				_lastAngle *= Math.sqrt( 1.0 - _this.dynamicDampingFactor );
-				_eye.copy( _this.object.position ).sub( _this.target );
-				quaternion.setFromAxisAngle( _lastAxis, _lastAngle );
-				_eye.applyQuaternion( quaternion );
-				_this.object.up.applyQuaternion( quaternion );
+				vec3.subtract(_eye,  _this.object.position, _this.target );
+				quat.setAxisAngle(quaternion,   _lastAxis, _lastAngle );
+				vec3.transformQuat(_eye,    _eye, quaternion );
+				vec3.transformQuat(_this.object.up,   _this.object.up, quaternion);
 
 			}
 
-			_movePrev.copy( _moveCurr );
+			vec2.clone(_movePrev,  _moveCurr);
 
 		};
 
@@ -667,6 +667,3 @@ window.TrackballControls = function ( object, domElement ) {
 	this.update();
 
 };
-
-THREE.TrackballControls.prototype = Object.create( THREE.EventDispatcher.prototype );
-THREE.TrackballControls.prototype.constructor = THREE.TrackballControls;
