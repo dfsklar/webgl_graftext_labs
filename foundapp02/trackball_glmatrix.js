@@ -118,6 +118,9 @@ window.TrackballControls = function ( object, domElement ) {
 	};
 
 
+    this.dispatchEvent = function(event) {
+        this.handleEvent(event);
+    };
 
 	this.handleEvent = function ( event ) {
 		if ( typeof this[ event.type ] == 'function' ) {
@@ -249,7 +252,7 @@ window.TrackballControls = function ( object, domElement ) {
 			pan = vec3.create();
 
 		return function panCamera() {
-      return; // !!!!!!!
+            return; // !!!!!!!
 			mouseChange.copy( _panEnd ).sub( _panStart );
 
 			if ( mouseChange.lengthSq() ) {
