@@ -178,9 +178,9 @@ window.TrackballControls = function ( object, domElement ) {
 
 				vec3.normalize(eyeDirection,   _eye);
 				vec3.normalize(objectUpDirection,    _this.object.up);
-        var cross = vec3.create();
-        vec3.cross(cross,   objectUpDirection, eyeDirection);
-        vec3.normalize(objectSidewaysDirection,   cross);
+                var cross = vec3.create();
+                vec3.cross(cross,   objectUpDirection, eyeDirection);
+                vec3.normalize(objectSidewaysDirection,   cross);
 
 				window.vec3extension.setLength(objectUpDirection,  objectUpDirection, ( _moveCurr.y - _movePrev.y ));
 				window.vec2extension.setLength(objectSidewaysDirection,   objectSidewaysDirection, ( _moveCurr.x - _movePrev.x ));
@@ -195,7 +195,7 @@ window.TrackballControls = function ( object, domElement ) {
 				vec3.transformQuat(_eye,   _eye, quaternion);
 				vec3.transformQuat(_this.object.up,   _this.object.up, quaternion);
 
-				vec3.clone(_lastAxis,  axis);
+				vec3.copy(_lastAxis,  axis);
 				_lastAngle = angle;
 
 			} else if ( ! _this.staticMoving && _lastAngle ) {
@@ -208,7 +208,7 @@ window.TrackballControls = function ( object, domElement ) {
 
 			}
 
-			vec2.clone(_movePrev,  _moveCurr);
+			vec2.copy(_movePrev,  _moveCurr);
 
 		};
 
@@ -318,12 +318,9 @@ window.TrackballControls = function ( object, domElement ) {
 
 		// NO EQUIV?:    _this.object.lookAt( _this.target );
 
-		if ( lastPosition.distanceToSquared( _this.object.position ) > EPS ) {
-
+		if ( vec3.squaredDistance(lastPosition, _this.object.position) > EPS ) {
 			_this.dispatchEvent( changeEvent );
-
-			lastPosition.copy( _this.object.position );
-
+			vec3.copy(lastPosition,   _this.object.position );
 		}
 
 	};
@@ -353,29 +350,19 @@ window.TrackballControls = function ( object, domElement ) {
 	// listeners
 
 	function keydown( event ) {
-
 		if ( _this.enabled === false ) return;
-
 		window.removeEventListener( 'keydown', keydown );
-
 		_prevState = _state;
 
 		if ( _state !== STATE.NONE ) {
-
 			return;
 
 		} else if ( event.keyCode === _this.keys[ STATE.ROTATE ] && ! _this.noRotate ) {
-
 			_state = STATE.ROTATE;
-
 		} else if ( event.keyCode === _this.keys[ STATE.ZOOM ] && ! _this.noZoom ) {
-
 			_state = STATE.ZOOM;
-
 		} else if ( event.keyCode === _this.keys[ STATE.PAN ] && ! _this.noPan ) {
-
 			_state = STATE.PAN;
-
 		}
 
 	}
@@ -402,16 +389,16 @@ window.TrackballControls = function ( object, domElement ) {
 		}
 
 		if ( _state === STATE.ROTATE && ! _this.noRotate ) {
-			_moveCurr.copy( getMouseOnCircle( event.pageX, event.pageY ) );
-			_movePrev.copy( _moveCurr );
+			vec2.copy(_moveCurr, getMouseOnCircle( event.pageX, event.pageY ) );
+			vec2.copy(_movePrev, _moveCurr );
 
 		} else if ( _state === STATE.ZOOM && ! _this.noZoom ) {
-			_zoomStart.copy( getMouseOnScreen( event.pageX, event.pageY ) );
-			_zoomEnd.copy( _zoomStart );
+			vec2.copy(_zoomStart, getMouseOnScreen( event.pageX, event.pageY ) );
+			vec2.copy(_zoomEnd, _zoomStart );
 
 		} else if ( _state === STATE.PAN && ! _this.noPan ) {
-			_panStart.copy( getMouseOnScreen( event.pageX, event.pageY ) );
-			_panEnd.copy( _panStart );
+			vec2.copy(_panStart,  getMouseOnScreen( event.pageX, event.pageY ) );
+			vec2.copy(_panEnd, _panStart );
 		}
 
 		document.addEventListener( 'mousemove', mousemove, false );
@@ -432,22 +419,17 @@ window.TrackballControls = function ( object, domElement ) {
 		event.stopPropagation();
 
 		if ( _state === STATE.ROTATE && ! _this.noRotate ) {
-
-			_movePrev.copy( _moveCurr );
-			_moveCurr.copy( getMouseOnCircle( event.pageX, event.pageY ) );
-
+			vec2.copy(_movePrev,  _moveCurr );
+			vec2.copy(_moveCurr,  getMouseOnCircle( event.pageX, event.pageY ) );
 		} else if ( _state === STATE.ZOOM && ! _this.noZoom ) {
-
-			_zoomEnd.copy( getMouseOnScreen( event.pageX, event.pageY ) );
-
+			vec2.copy(_zoomEnd,  getMouseOnScreen( event.pageX, event.pageY ) );
 		} else if ( _state === STATE.PAN && ! _this.noPan ) {
-
-			_panEnd.copy( getMouseOnScreen( event.pageX, event.pageY ) );
-
+			vec2.copy(_panEnd,  getMouseOnScreen( event.pageX, event.pageY ) );
 		}
-
 	}
 
+
+    
 	function mouseup( event ) {
 
 		if ( _this.enabled === false ) return;
@@ -466,33 +448,28 @@ window.TrackballControls = function ( object, domElement ) {
 
 
 	  function mousewheel( event ) {
+		  if ( _this.enabled === false ) return;
+		  event.preventDefault();
+		  event.stopPropagation();
+		  switch ( event.deltaMode ) {
+          case 2:
+              // Zoom in pages
+              _zoomStart.y -= event.deltaY * 0.025;
+              break;
 
-		    if ( _this.enabled === false ) return;
+		  case 1:
+              // Zoom in lines
+			  _zoomStart.y -= event.deltaY * 0.01;
+			  break;
 
-		    event.preventDefault();
-		    event.stopPropagation();
+		  default:
+			  // undefined, 0, assume pixels
+			  _zoomStart.y -= event.deltaY * 0.00025;
+			  break;
+		  }
 
-		    switch ( event.deltaMode ) {
-
-        case 2:
-            // Zoom in pages
-            _zoomStart.y -= event.deltaY * 0.025;
-            break;
-
-			  case 1:
-            // Zoom in lines
-				    _zoomStart.y -= event.deltaY * 0.01;
-				    break;
-
-			  default:
-				    // undefined, 0, assume pixels
-				    _zoomStart.y -= event.deltaY * 0.00025;
-				    break;
-
-		    }
-
-		    _this.dispatchEvent( startEvent );
-		    _this.dispatchEvent( endEvent );
+		  _this.dispatchEvent( startEvent );
+		  _this.dispatchEvent( endEvent );
 	  }
 
 
