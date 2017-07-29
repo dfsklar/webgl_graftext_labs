@@ -1,4 +1,8 @@
 /**
+
+LIVE DEMO IS AT:
+https://threejs.org/examples/misc_controls_trackball.html
+
  * @author Eberhard Graether / http://egraether.com/
  * @author Mark Lundin 	/ http://mark-lundin.com
  * @author Simone Manini / http://daron1337.github.io
@@ -293,43 +297,37 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 	};
 
+
+
+
 	this.update = function () {
-
 		_eye.subVectors( _this.object.position, _this.target );
-
 		if ( ! _this.noRotate ) {
-
 			_this.rotateCamera();
-
 		}
 
 		if ( ! _this.noZoom ) {
-
 			_this.zoomCamera();
-
 		}
 
 		if ( ! _this.noPan ) {
-
 			_this.panCamera();
-
 		}
 
 		_this.object.position.addVectors( _this.target, _eye );
-
 		_this.checkDistances();
-
 		_this.object.lookAt( _this.target );
 
 		if ( lastPosition.distanceToSquared( _this.object.position ) > EPS ) {
-
 			_this.dispatchEvent( changeEvent );
-
 			lastPosition.copy( _this.object.position );
-
 		}
 
 	};
+
+
+
+
 
 	this.reset = function () {
 
@@ -349,6 +347,10 @@ THREE.TrackballControls = function ( object, domElement ) {
 		lastPosition.copy( _this.object.position );
 
 	};
+
+
+
+
 
 	// listeners
 

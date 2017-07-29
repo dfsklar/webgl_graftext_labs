@@ -133,10 +133,18 @@
         mvMatrix = mvMatrixStack.pop();
     }
 
+
+
     function setMatrixUniforms() {
+        // MAJOR IMPORTANCE -- actually sends to the shader the 3 key matrices!
+
+        // PROJ
         gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
+
+        // MODELVIEW
         gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
 
+        // NORMAL
         var normalMatrix = mat3.create();
         mat3.normalFromMat4(normalMatrix,  mvMatrix);
         gl.uniformMatrix3fv(shaderProgram.nMatrixUniform, false, normalMatrix);
@@ -303,7 +311,7 @@ function handleMouseMove(event) {
         gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        // Playing with the first number made the camera approach or withdraw from the moon
+        // First input param is the field of view
         // fieldOfViewRadians, aspect, zNear, zFar
         mat4.perspective(pMatrix,   45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
 
