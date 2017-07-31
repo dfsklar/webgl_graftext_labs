@@ -27,12 +27,12 @@ window.vec3extension = {
 
 
 
-window.TrackballControls = function ( object, domElement ) {
+window.TrackballControls = function ( camera, domElement ) {
 
 	  var _this = this;
 	  var STATE = { NONE: - 1, ROTATE: 0, ZOOM: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_ZOOM_PAN: 4 };
 
-	  this.object = object;
+	  this.camera = camera;
 	  this.domElement = ( domElement !== undefined ) ? domElement : document;
 
 	  // API
@@ -88,8 +88,8 @@ window.TrackballControls = function ( object, domElement ) {
 	  // for reset
 
 	  this.target0 = vec3.clone(this.target);
-	  this.position0 = vec3.clone(this.object.position);
-	  this.up0 = vec3.clone(this.object.up);
+	  this.position0 = vec3.clone(this.camera.position);
+	  this.up0 = vec3.clone(this.camera.up);
 
 	  // events
 
@@ -169,8 +169,8 @@ window.TrackballControls = function ( object, domElement ) {
 		    var axis = vec3.create(),
 			      quaternion = quat.create(),
 			      eyeDirection = vec3.create(),
-			      objectUpDirection = vec3.create(),
-			      objectSidewaysDirection = vec3.create(),
+			      cameraUpDirection = vec3.create(),
+			      cameraSidewaysDirection = vec3.create(),
 			      moveDirection = vec3.create(),
 			      angle;
 
@@ -182,18 +182,18 @@ window.TrackballControls = function ( object, domElement ) {
 
 			    if ( angle ) {
 
-				      vec3.subtract(_eye,  _this.object.position, _this.target);
+				      vec3.subtract(_eye,  _this.camera.position, _this.target);
 
 				      vec3.normalize(eyeDirection,   _eye);
-				      vec3.normalize(objectUpDirection,    _this.object.up);
+				      vec3.normalize(cameraUpDirection,    _this.camera.up);
               var cross = vec3.create();
-              vec3.cross(cross,   objectUpDirection, eyeDirection);
-              vec3.normalize(objectSidewaysDirection,   cross);
+              vec3.cross(cross,   cameraUpDirection, eyeDirection);
+              vec3.normalize(cameraSidewaysDirection,   cross);
 
-				      window.vec3extension.setLength(objectUpDirection,  objectUpDirection, ( _moveCurr.y - _movePrev.y ));
-				      window.vec2extension.setLength(objectSidewaysDirection,   objectSidewaysDirection, ( _moveCurr.x - _movePrev.x ));
+				      window.vec3extension.setLength(cameraUpDirection,  cameraUpDirection, ( _moveCurr.y - _movePrev.y ));
+				      window.vec2extension.setLength(cameraSidewaysDirection,   cameraSidewaysDirection, ( _moveCurr.x - _movePrev.x ));
 
-				      vec3.add(moveDirection,    objectUpDirection, objectSidewaysDirection);
+				      vec3.add(moveDirection,    cameraUpDirection, cameraSidewaysDirection);
 
 				      vec3.normalize(axis,  vec3.crossVectors(axis,    moveDirection, _eye ));
 
@@ -201,7 +201,7 @@ window.TrackballControls = function ( object, domElement ) {
 				      quat.setAxisAngle(quaternion,    axis, angle);
 
 				      vec3.transformQuat(_eye,   _eye, quaternion);
-				      vec3.transformQuat(_this.object.up,   _this.object.up, quaternion);
+				      vec3.transformQuat(_this.camera.up,   _this.camera.up, quaternion);
 
 				      vec3.copy(_lastAxis,  axis);
 				      _lastAngle = angle;
@@ -209,10 +209,10 @@ window.TrackballControls = function ( object, domElement ) {
 			    } else if ( ! _this.staticMoving && _lastAngle ) {
 
 				      _lastAngle *= Math.sqrt( 1.0 - _this.dynamicDampingFactor );
-				      vec3.subtract(_eye,  _this.object.position, _this.target );
+				      vec3.subtract(_eye,  _this.camera.position, _this.target );
 				      quat.setAxisAngle(quaternion,   _lastAxis, _lastAngle );
 				      vec3.transformQuat(_eye,    _eye, quaternion );
-				      vec3.transformQuat(_this.object.up,   _this.object.up, quaternion);
+				      vec3.transformQuat(_this.camera.up,   _this.camera.up, quaternion);
 
 			    }
 
@@ -251,7 +251,7 @@ window.TrackballControls = function ( object, domElement ) {
 	  this.panCamera = ( function() {
 
 		    var mouseChange = vec2.create(),
-			      objectUp = vec3.create(),
+			      cameraUp = vec3.create(),
 			      pan = vec3.create();
 
 		    return function panCamera() {
@@ -262,10 +262,10 @@ window.TrackballControls = function ( object, domElement ) {
 
 				        mouseChange.multiplyScalar( _eye.length() * _this.panSpeed );
 
-				        pan.copy( _eye ).cross( _this.object.up ).setLength( mouseChange.x );
-				        pan.add( objectUp.copy( _this.object.up ).setLength( mouseChange.y ) );
+				        pan.copy( _eye ).cross( _this.camera.up ).setLength( mouseChange.x );
+				        pan.add( cameraUp.copy( _this.camera.up ).setLength( mouseChange.y ) );
 
-				        _this.object.position.add( pan );
+				        _this.camera.position.add( pan );
 				        _this.target.add( pan );
 
 				        if ( _this.staticMoving ) {
@@ -290,11 +290,11 @@ window.TrackballControls = function ( object, domElement ) {
 	  this.checkDistances = function () {
 		    if ( ! _this.noZoom || ! _this.noPan ) {
 			      if ( vec3.squaredLength(_eye) > _this.maxDistance * _this.maxDistance ) {
-				        vec3.add(_this.object.position,    _this.target, window.vec3extension.setLength(_eye,  _this.maxDistance));
+				        vec3.add(_this.camera.position,    _this.target, window.vec3extension.setLength(_eye,  _this.maxDistance));
 				        vec2.copy(_zoomStart, _zoomEnd );
 			      }
 			      if ( vec3.squaredLength(_eye) < _this.minDistance * _this.minDistance ) {
-				        vec3.add(_this.object.position,    _this.target, window.vec3extension.setLength(_eye, _this.minDistance));
+				        vec3.add(_this.camera.position,    _this.target, window.vec3extension.setLength(_eye, _this.minDistance));
 				        vec2.copy(_zoomStart, _zoomEnd );
 			      }
 		    }
@@ -305,7 +305,7 @@ window.TrackballControls = function ( object, domElement ) {
 
 	  this.update = function () {
 
-		    vec3.subtract(_eye, _this.object.position, _this.target );
+		    vec3.subtract(_eye, _this.camera.position, _this.target );
 
 		    if ( ! _this.noRotate ) {
 			      _this.rotateCamera();
@@ -319,14 +319,14 @@ window.TrackballControls = function ( object, domElement ) {
 			      _this.panCamera();
 		    }
 
-		    vec3.add(_this.object.position,   _this.target, _eye );
+		    vec3.add(_this.camera.position,   _this.target, _eye );
 		    _this.checkDistances();
 
-		    // NO EQUIV?:    _this.object.lookAt( _this.target );
+		    // NO EQUIV?:    _this.camera.lookAt( _this.target );
 
-		    if ( vec3.squaredDistance(lastPosition, _this.object.position) > EPS ) {
+		    if ( vec3.squaredDistance(lastPosition, _this.camera.position) > EPS ) {
 			      _this.dispatchEvent( changeEvent );
-			      vec3.copy(lastPosition,   _this.object.position );
+			      vec3.copy(lastPosition,   _this.camera.position );
 		    }
 
 	  };
@@ -340,14 +340,14 @@ window.TrackballControls = function ( object, domElement ) {
 		    _prevState = STATE.NONE;
 
 		    vec3.copy(_this.target, _this.target0 );
-		    vec3.copy(_this.object.position, _this.position0 );
-		    vec3.copy(_this.object.up,  _this.up0 );
+		    vec3.copy(_this.camera.position, _this.position0 );
+		    vec3.copy(_this.camera.up,  _this.up0 );
 
-		    vec3.subtract(_eye,  _this.object.position, _this.target );
+		    vec3.subtract(_eye,  _this.camera.position, _this.target );
 
-		    // NO EQUIV?   _this.object.lookAt( _this.target );
+		    // NO EQUIV?   _this.camera.lookAt( _this.target );
 		    _this.dispatchEvent( changeEvent );
-		    lastPosition.copy( _this.object.position );
+		    lastPosition.copy( _this.camera.position );
 	  };
 
 

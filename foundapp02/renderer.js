@@ -1,6 +1,14 @@
-    var gl;
+var gl;
 
-    function initGL(canvas) {
+
+var TRACKBALL = null;
+var CAMERA = null;
+
+var SETTINGS = {
+    camera_paradigm: 'trackball'
+};
+
+function initGL(canvas) {
         try {
             gl = canvas.getContext("experimental-webgl");
             gl.viewportWidth = canvas.width;
@@ -119,7 +127,9 @@
 
     var mvMatrix = mat4.create();
     var mvMatrixStack = [];
-    var pMatrix = mat4.create();
+var pMatrix = mat4.create();
+var cameraMatrix = mat4.create();
+
 
     function mvPushMatrix() {
         var copy = mat4.clone(mvMatrix);
@@ -345,8 +355,13 @@ function handleMouseMove(event) {
 
         mat4.identity(mvMatrix);
 
-        mat4.multiply(mvMatrix,   mvMatrix, cameraExtraRotationMatrix);   // 3. Reposition the camera
-        mat4.translate(mvMatrix,   mvMatrix, [0, 0, -6]);         // 2. Translate away from the origin to Z=-6
+        if (SETTINGS.camera_paradigm == 'original') {
+            mat4.multiply(mvMatrix,   mvMatrix, cameraExtraRotationMatrix);   // 3. Reposition the camera
+            mat4.translate(mvMatrix,   mvMatrix, [0, 0, -6]);         // 2. Translate away from the origin to Z=-6
+        } else {
+            mat4.lookAt(cameraMatrix, CAMERA.position, [0, 0, 18], CAMERA.up);
+            mat4.multiply(mvMatrix,   mvMatrix, cameraMatrix);
+        }
         mat4.multiply(mvMatrix,   mvMatrix, moonRotationMatrix);  // 1. Rotate the moon around the origin
 
         gl.activeTexture(gl.TEXTURE0);
@@ -368,6 +383,7 @@ function handleMouseMove(event) {
     }
 
 
+// UPDATES THE moonRotationMatrix GLOBAL
 function rotateModel() {
     var newRotationMatrix = mat4.create();
     mat4.rotate(newRotationMatrix,   newRotationMatrix, degToRad(1 / 10), [0, 1, 0]);
@@ -391,21 +407,23 @@ function webGLStart() {
     initBuffers();
     initTexture();
 
-    var targetObject = {
+    CAMERA = {
         position: vec3.create(),
         up: vec3.create()
     };
-    vec3.set(targetObject.position,   0, 0, 0);
-    vec3.set(targetObject.up,   0, 1, 0);
+    vec3.set(CAMERA.position,   0, 0, -5);
+    vec3.set(CAMERA.up,   0, 1, 0);
 
-    var trackballControl = new window.TrackballControls(targetObject, canvas);
+    TRACKBALL = new window.TrackballControls(CAMERA, canvas);
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.enable(gl.DEPTH_TEST);
 
-    canvas.onmousedown = handleMouseDown;
-    document.onmouseup = handleMouseUp;
-    document.onmousemove = handleMouseMove;
+    if (SETTINGS.camera_paradigm == 'original') {
+        canvas.onmousedown = handleMouseDown;
+        document.onmouseup = handleMouseUp;
+        document.onmousemove = handleMouseMove;
+    }
 
     tick();
 }
