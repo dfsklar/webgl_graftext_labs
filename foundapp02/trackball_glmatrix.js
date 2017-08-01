@@ -231,14 +231,14 @@ window.TrackballControls = function ( camera, domElement ) {
 		    if ( _state === STATE.TOUCH_ZOOM_PAN ) {
 			      factor = _touchZoomDistanceStart / _touchZoomDistanceEnd;
 			      _touchZoomDistanceStart = _touchZoomDistanceEnd;
-			      _eye.multiplyScalar( factor );
+			      vec3.scale(_eye,   _eye, factor );
 		    } else {
 			      factor = 1.0 + ( _zoomEnd[1] - _zoomStart[1] ) * _this.zoomSpeed;
 			      if ( factor !== 1.0 && factor > 0.0 ) {
-				        _eye.multiplyScalar( factor );
+				        vec3.scale(_eye,   _eye, factor );
 			      }
 			      if ( _this.staticMoving ) {
-				        _zoomStart.copy( _zoomEnd );
+				        vec3.copy(_zoomStart,   _zoomEnd );
 			      } else {
 				        _zoomStart[1] += ( _zoomEnd[1] - _zoomStart[1] ) * this.dynamicDampingFactor;
 			      }
