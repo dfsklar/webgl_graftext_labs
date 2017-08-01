@@ -359,6 +359,7 @@ function handleMouseMove(event) {
             mat4.multiply(mvMatrix,   mvMatrix, cameraExtraRotationMatrix);   // 3. Reposition the camera
             mat4.translate(mvMatrix,   mvMatrix, [0, 0, -6]);         // 2. Translate away from the origin to Z=-6
         } else {
+            TRACKBALL.update();
             mat4.lookAt(cameraMatrix, CAMERA.position, [0, 0, 18], CAMERA.up);
             mat4.multiply(mvMatrix,   mvMatrix, cameraMatrix);
         }

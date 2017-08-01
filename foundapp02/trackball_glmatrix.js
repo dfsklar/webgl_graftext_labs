@@ -177,7 +177,7 @@ window.TrackballControls = function ( camera, domElement ) {
 
 		  return function rotateCamera() {
 
-			    vec3.set(moveDirection,    _moveCurr.x - _movePrev.x, _moveCurr.y - _movePrev.y, 0 );
+			    vec3.set(moveDirection,    _moveCurr[0] - _movePrev[0], _moveCurr[1] - _movePrev[1], 0 );
 			    angle = vec3.length(moveDirection);
 
 			    if ( angle ) {
@@ -190,12 +190,12 @@ window.TrackballControls = function ( camera, domElement ) {
               vec3.cross(cross,   cameraUpDirection, eyeDirection);
               vec3.normalize(cameraSidewaysDirection,   cross);
 
-				      window.vec3extension.setLength(cameraUpDirection,  cameraUpDirection, ( _moveCurr.y - _movePrev.y ));
-				      window.vec2extension.setLength(cameraSidewaysDirection,   cameraSidewaysDirection, ( _moveCurr.x - _movePrev.x ));
+				      window.vec3extension.setLength(cameraUpDirection,  cameraUpDirection, ( _moveCurr[1] - _movePrev[1] ));
+				      window.vec3extension.setLength(cameraSidewaysDirection,   cameraSidewaysDirection, ( _moveCurr[0] - _movePrev[0] ));
 
 				      vec3.add(moveDirection,    cameraUpDirection, cameraSidewaysDirection);
 
-				      vec3.normalize(axis,  vec3.crossVectors(axis,    moveDirection, _eye ));
+				      vec3.normalize(axis,  vec3.cross(axis,    moveDirection, _eye ));
 
 				      angle *= _this.rotateSpeed;
 				      quat.setAxisAngle(quaternion,    axis, angle);
@@ -233,14 +233,14 @@ window.TrackballControls = function ( camera, domElement ) {
 			      _touchZoomDistanceStart = _touchZoomDistanceEnd;
 			      _eye.multiplyScalar( factor );
 		    } else {
-			      factor = 1.0 + ( _zoomEnd.y - _zoomStart.y ) * _this.zoomSpeed;
+			      factor = 1.0 + ( _zoomEnd[1] - _zoomStart[1] ) * _this.zoomSpeed;
 			      if ( factor !== 1.0 && factor > 0.0 ) {
 				        _eye.multiplyScalar( factor );
 			      }
 			      if ( _this.staticMoving ) {
 				        _zoomStart.copy( _zoomEnd );
 			      } else {
-				        _zoomStart.y += ( _zoomEnd.y - _zoomStart.y ) * this.dynamicDampingFactor;
+				        _zoomStart[1] += ( _zoomEnd[1] - _zoomStart[1] ) * this.dynamicDampingFactor;
 			      }
 		    }
 	  };
@@ -262,8 +262,8 @@ window.TrackballControls = function ( camera, domElement ) {
 
 				        mouseChange.multiplyScalar( _eye.length() * _this.panSpeed );
 
-				        pan.copy( _eye ).cross( _this.camera.up ).setLength( mouseChange.x );
-				        pan.add( cameraUp.copy( _this.camera.up ).setLength( mouseChange.y ) );
+				        pan.copy( _eye ).cross( _this.camera.up ).setLength( mouseChange[0] );
+				        pan.add( cameraUp.copy( _this.camera.up ).setLength( mouseChange[1] ) );
 
 				        _this.camera.position.add( pan );
 				        _this.target.add( pan );
@@ -460,17 +460,17 @@ window.TrackballControls = function ( camera, domElement ) {
 		    switch ( event.deltaMode ) {
         case 2:
             // Zoom in pages
-            _zoomStart.y -= event.deltaY * 0.025;
+            _zoomStart[1] -= event.deltaY * 0.025;
             break;
 
 		    case 1:
             // Zoom in lines
-			      _zoomStart.y -= event.deltaY * 0.01;
+			      _zoomStart[1] -= event.deltaY * 0.01;
 			      break;
 
 		    default:
 			      // undefined, 0, assume pixels
-			      _zoomStart.y -= event.deltaY * 0.00025;
+			      _zoomStart[1] -= event.deltaY * 0.00025;
 			      break;
 		    }
 
