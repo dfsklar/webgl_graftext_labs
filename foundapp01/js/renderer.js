@@ -23,9 +23,17 @@ function Renderer(canvasName, vertSrc, fragSrc)
   this.shininess = 4.0;
   this.kaVal = 1.0;
   this.kdVal = 1.0;
-  this.ksVal = 1.0;
+    this.ksVal = 1.0;
 
-  // private members (inside closure)
+    
+
+    // private members (inside closure)
+    // for Sklar's trackball
+    var mvMatrix = mat4.create();
+    var mvMatrixStack = [];
+    var pMatrix = mat4.create();
+    var cameraMatrix = mat4.create();
+
   var canvasName = canvasName;
   var vertSrc = vertSrc;
   var fragSrc = fragSrc;
@@ -172,32 +180,52 @@ function Renderer(canvasName, vertSrc, fragSrc)
 
   //public
   this.display = function () {
-    gl.clearColor(this.clearColor[0], this.clearColor[1], this.clearColor[2], 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.clearColor(this.clearColor[0], this.clearColor[1], this.clearColor[2], 1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.useProgram(progID);
 
-    // camera orbits in the z=1.5 plane
-    // and looks at the origin
-    // mat4LookAt replaces gluLookAt
-    var rad = Math.PI / 180.0 * this.t;
+      this.mode = 'fixedobj_camerarevolves';
 
-    mat4LookAt(modelview,
-               1.5*Math.cos(rad), 1.5*Math.sin(rad), 1.5, // eye
-               0.0, 0.0, 0.0, // look at
-               0.0, 0.0, 1.0); // up
+      var modelviewInv = new Float32Array(16);
+      var normalmatrix = new Float32Array(16);
 
-    //mat4Print(modelview);
+      if (this.mode == 'fixedobj_camerarevolvesx') {
+          // camera orbits in the z=1.5 plane
+          // and looks at the origin
+          // mat4LookAt replaces gluLookAt
+          var rad = Math.PI / 180.0 * this.t;
 
-    var modelviewInv = new Float32Array(16);
-    var normalmatrix = new Float32Array(16);
-    mat4Invert(modelview, modelviewInv);
-    mat4Transpose(modelviewInv, normalmatrix);
+          mat4LookAt(modelview,
+                     1.5*Math.cos(rad), 1.5*Math.sin(rad), 1.5, // eye
+                     0.0, 0.0, 0.0, // look at
+                     0.0, 0.0, 1.0); // up
 
-    gl.useProgram(progID);
+          //mat4Print(modelview);
 
-    // load the current projection and modelview matrix into the
-    // corresponding UNIFORM variables of the shader
-    gl.uniformMatrix4fv(projectionLoc, false, projection);
-    gl.uniformMatrix4fv(modelviewLoc, false, modelview);
+          // load the current projection and modelview matrix into the
+          // corresponding UNIFORM variables of the shader
+          gl.uniformMatrix4fv(projectionLoc, false, projection);
+          gl.uniformMatrix4fv(modelviewLoc, false, modelview);
+      } else {
+          TRACKBALL.update();
+          // First input param is the field of view
+          // fieldOfViewRadians, aspect, zNear, zFar
+          mat4.perspective(pMatrix,   45, gl.drawingBufferWidth / gl.drawingBufferHeight, 0.1, 100.0);
+          mat4.identity(mvMatrix);
+          mat4.lookAt(cameraMatrix,    CAMERA.position, [0, 0, 0], CAMERA.up);
+          mat4.multiply(pMatrix,   pMatrix, cameraMatrix);
+          gl.uniformMatrix4fv(projectionLoc, false, pMatrix);
+          gl.uniformMatrix4fv(modelviewLoc, false, mvMatrix);
+          
+          //var normalMatrix = mat3.create();
+          //mat3.normalFromMat4(normalMatrix,  mvMatrix);
+          //gl.uniformMatrix3fv(shaderProgram.nMatrixUniform, false, normalMatrix);
+
+          mat4Invert(mvMatrix, modelviewInv);
+          mat4Transpose(modelviewInv, normalmatrix);
+      }
+
+
     if(normalMatrixLoc != -1)  gl.uniformMatrix4fv(normalMatrixLoc, false, normalmatrix);
     if(modeLoc != -1) gl.uniform1i(modeLoc, this.modeVal);
     if(kaLoc != -1) gl.uniform1f(kaLoc, this.kaVal);
