@@ -108,11 +108,12 @@ function Renderer(canvasName, vertSrc, fragSrc)
         position: vec3.create(),
         up: vec3.create()
     };
-    vec3.set(CAMERA.position,   0, 0, 8);
-    vec3.set(CAMERA.up,   0, 1, 0);
+    vec3.set(CAMERA.position,   0, -2, 0);
+      vec3.set(CAMERA.up,   0, 0, 1);
 
-    TRACKBALL = new window.TrackballControls(CAMERA, this.canvas);
+      TRACKBALL = new window.TrackballControls(CAMERA, this.canvas);
 
+      window.AXEScreate(gl);
 
     gl.enable(gl.DEPTH_TEST);
     setupShaders();
@@ -182,7 +183,9 @@ function Renderer(canvasName, vertSrc, fragSrc)
   this.display = function () {
       gl.clearColor(this.clearColor[0], this.clearColor[1], this.clearColor[2], 1.0);
       gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.useProgram(progID);
+
+
+
 
       this.mode = 'fixedobj_camerarevolves';
 
@@ -214,8 +217,6 @@ function Renderer(canvasName, vertSrc, fragSrc)
           mat4.identity(mvMatrix);
           mat4.lookAt(cameraMatrix,    CAMERA.position, [0, 0, 0], CAMERA.up);
           mat4.multiply(pMatrix,   pMatrix, cameraMatrix);
-          gl.uniformMatrix4fv(projectionLoc, false, pMatrix);
-          gl.uniformMatrix4fv(modelviewLoc, false, mvMatrix);
           
           //var normalMatrix = mat3.create();
           //mat3.normalFromMat4(normalMatrix,  mvMatrix);
@@ -225,6 +226,20 @@ function Renderer(canvasName, vertSrc, fragSrc)
           mat4Transpose(modelviewInv, normalmatrix);
       }
 
+      if (true) {
+          window.AXES.draw({
+              projection: pMatrix,
+              model: mvMatrix
+          });
+
+      }
+
+      gl.useProgram(progID);
+
+      gl.uniformMatrix4fv(projectionLoc, false, pMatrix);
+      gl.uniformMatrix4fv(modelviewLoc, false, mvMatrix);
+
+      
 
     if(normalMatrixLoc != -1)  gl.uniformMatrix4fv(normalMatrixLoc, false, normalmatrix);
     if(modeLoc != -1) gl.uniform1i(modeLoc, this.modeVal);
@@ -237,10 +252,13 @@ function Renderer(canvasName, vertSrc, fragSrc)
     if(lightVecLoc != -1) gl.uniform3fv(lightVecLoc, this.lightVec);
     if(ambientColorLoc != -1) gl.uniform3fv(ambientColorLoc, this.ambientColor);
     if(diffuseColorLoc != -1) gl.uniform3fv(diffuseColorLoc, this.diffuseColor);
-    if(specularColorLoc != -1) gl.uniform3fv(specularColorLoc, this.specularColor);
+      if(specularColorLoc != -1) gl.uniform3fv(specularColorLoc, this.specularColor);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, bufID);
-    gl.drawArrays(gl.TRIANGLES, 0, sceneVertNo);
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, bufID);
+      // This next line generates the out-of-range vertices if the window.AXES.draw occurred before this
+      gl.drawArrays(gl.TRIANGLES, 0, sceneVertNo);
+
   }
 
   // private
