@@ -1,5 +1,13 @@
 // created by Thorsten Thormaehlen for educational purpose
 
+var TRACKBALL = null;
+var CAMERA = null;
+
+var SETTINGS = {
+    camera_paradigm: 'trackball'
+};
+
+
 function Renderer(canvasName, vertSrc, fragSrc)
 {
   // public member
@@ -50,6 +58,8 @@ function Renderer(canvasName, vertSrc, fragSrc)
   var modelview = new Float32Array(16);
   var currentFileName = "./physical_models/knot.txt";
 
+    
+
   // public
   this.updateShader = function (newvertSrc, newfragSrc) {
     vertSrc = newvertSrc;
@@ -84,6 +94,17 @@ function Renderer(canvasName, vertSrc, fragSrc)
         window.alert("Error: Could not retrieve WebGL Context");
         return;
     }
+
+      
+    CAMERA = {
+        position: vec3.create(),
+        up: vec3.create()
+    };
+    vec3.set(CAMERA.position,   0, 0, 8);
+    vec3.set(CAMERA.up,   0, 1, 0);
+
+    TRACKBALL = new window.TrackballControls(CAMERA, this.canvas);
+
 
     gl.enable(gl.DEPTH_TEST);
     setupShaders();
