@@ -12,14 +12,17 @@ var canvas_2 = document.getElementById("world_2");
 var glBoostContext_2 = new GLBoost.GLBoostMiddleContext(canvas_2);
 
 var renderer_2 = glBoostContext_2.createRenderer({
+    // the clearColor attribute sets the background color
     clearColor: {red: 0.0, green: 0.0, blue: 0.0, alpha: 1}
 });
 
 var scene_2 = glBoostContext_2.createScene();
 
 var material_2 = glBoostContext_2.createClassicMaterial();
-var texture_2 = glBoostContext_2.createTexture('resources/texture.png');
-material_2.setTexture(texture_2);
+
+// If you don't set a texture, you get a pure white opaque thing
+// var texture_2 = glBoostContext_2.createTexture('resources/texture.png');
+// material_2.setTexture(texture_2);
 
 var shader_2 = new GLBoost.PhongShader(glBoostContext_2);
 material_2.shaderInstance = shader_2;
@@ -28,8 +31,19 @@ var geometry_2 = glBoostContext_2.createSphere(20, 24, 24, null);
 var sphere = glBoostContext_2.createMesh(geometry_2, material_2);
 scene_2.addChild(sphere);
 
-var directionalLight_2 = glBoostContext_2.createDirectionalLight(new GLBoost.Vector3(1, 1, 1), new GLBoost.Vector3(-1, -1, -1));
+var directionalLight_2 = glBoostContext_2.createDirectionalLight(
+    // color of the light:
+    new GLBoost.Vector3(0, 0, 1),
+    // direction of the light (x=-1 means light is at our right, pointing towards the left)
+    new GLBoost.Vector3(-1, -1, -1));
 scene_2.addChild( directionalLight_2 );
+
+var directionalLight_3 = glBoostContext_2.createDirectionalLight(
+    // color of the light:
+    new GLBoost.Vector3(1, 0, 0),
+    // direction of the light (x=-1 means light is at our right, pointing towards the left)
+    new GLBoost.Vector3(1, -1, -1));
+scene_2.addChild( directionalLight_3 );
 
 
 var camera = glBoostContext_2.createPerspectiveCamera({
