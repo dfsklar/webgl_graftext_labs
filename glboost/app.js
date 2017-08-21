@@ -45,22 +45,26 @@ respondToChangeInModelSelection();
 $("#model-selector").selectmenu({change: respondToChangeInModelSelection});
 
 function respondToChangeInModelSelection(event, ui) {
-    var newValue = 'moon';
-    if (ui) {
-        newValue = ui.item.value;
-    }
+    var newValue = $("#model-selector")[0].value;
 
     material = glBoostContext.createClassicMaterial();
 
     switch (newValue) {
-    case 'moonxx':
+    case 'moon':
         var texture = glBoostContext.createTexture('resources/moon.gif');
         material.setTexture(texture);
         break;
     default:
+        var colorInTextRepr = ($('#colorSelectorAmbient div').css('backgroundColor'));
+        var colorAsArray = parseCSSColor(colorInTextRepr);
+        material.ambientColor = new GLBoost.Vector4(colorAsArray[0], colorAsArray[1], colorAsArray[2], 1.0);
+        material.ambientColor = new GLBoost.Vector4(0.8, 0.8, 0.8, 1.0);  //colorAsArray[0], colorAsArray[1], colorAsArray[2], 1.0);
         var colorInTextRepr = ($('#colorSelectorDiffuse div').css('backgroundColor'));
         var colorAsArray = parseCSSColor(colorInTextRepr);
         material.diffuseColor = new GLBoost.Vector4(colorAsArray[0], colorAsArray[1], colorAsArray[2], 1.0);
+        var colorInTextRepr = ($('#colorSelectorSpecular div').css('backgroundColor'));
+        var colorAsArray = parseCSSColor(colorInTextRepr);
+        material.specularColor = new GLBoost.Vector4(colorAsArray[0], colorAsArray[1], colorAsArray[2], 1.0);
     }
     // If you don't set a texture, you get a pure white opaque thing
 
@@ -124,7 +128,7 @@ $('#colorSelectorAmbient').ColorPicker({
   },
   onChange: function (hsb, hex, rgb) {
     $('#colorSelectorAmbient div').css('backgroundColor', '#' + hex);
-    renderer.ambientColor = [rgb.r/256, rgb.g/256, rgb.b/256];
+    respondToChangeInModelSelection();
   },
   onBeforeShow: function (colpkr) {
     $(colpkr).ColorPickerSetColor('rgb(0.2,0.0,0.0)');
@@ -145,6 +149,8 @@ function updateLightSpecularTerm(event, ui){
   $('#slider-ks-value').html(ui.value);
 }
 
+
+
 $('#colorSelectorDiffuse').ColorPicker({
   onSubmit: function(hsb, hex, rgb, el) {
     $(el).val(hex);
@@ -161,6 +167,31 @@ $('#colorSelectorDiffuse').ColorPicker({
   },
   onChange: function (hsb, hex, rgb) {
     $('#colorSelectorDiffuse div').css('backgroundColor', '#' + hex);
+    respondToChangeInModelSelection();
+  },
+  onBeforeShow: function (colpkr) {
+    $(colpkr).ColorPickerSetColor('rgb(0.2,0.0,0.0)');
+  }
+});
+
+
+
+$('#colorSelectorSpecular').ColorPicker({
+  onSubmit: function(hsb, hex, rgb, el) {
+    $(el).val(hex);
+    $(el).ColorPickerHide();
+  },
+  color: '#340000',
+  onShow: function (colpkr) {
+    $(colpkr).fadeIn(100);
+    return false;
+  },
+  onHide: function (colpkr) {
+    $(colpkr).fadeOut(100);
+    return false;
+  },
+  onChange: function (hsb, hex, rgb) {
+    $('#colorSelectorSpecular div').css('backgroundColor', '#' + hex);
     respondToChangeInModelSelection();
   },
   onBeforeShow: function (colpkr) {
