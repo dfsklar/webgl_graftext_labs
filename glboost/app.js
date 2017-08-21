@@ -49,16 +49,15 @@ function respondToChangeInModelSelection(event, ui) {
 
     material = glBoostContext.createClassicMaterial();
 
+    var colorInTextRepr = ($('#colorSelectorAmbient div').css('backgroundColor'));
+    var colorAsArray = parseCSSColor(colorInTextRepr);
+    material.ambientColor = new GLBoost.Vector4(colorAsArray[0], colorAsArray[1], colorAsArray[2], 1.0);
     switch (newValue) {
     case 'moon':
         var texture = glBoostContext.createTexture('resources/moon.gif');
         material.setTexture(texture);
         break;
     default:
-        var colorInTextRepr = ($('#colorSelectorAmbient div').css('backgroundColor'));
-        var colorAsArray = parseCSSColor(colorInTextRepr);
-        material.ambientColor = new GLBoost.Vector4(colorAsArray[0], colorAsArray[1], colorAsArray[2], 1.0);
-        material.ambientColor = new GLBoost.Vector4(0.8, 0.8, 0.8, 1.0);  //colorAsArray[0], colorAsArray[1], colorAsArray[2], 1.0);
         var colorInTextRepr = ($('#colorSelectorDiffuse div').css('backgroundColor'));
         var colorAsArray = parseCSSColor(colorInTextRepr);
         material.diffuseColor = new GLBoost.Vector4(colorAsArray[0], colorAsArray[1], colorAsArray[2], 1.0);
