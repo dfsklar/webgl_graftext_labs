@@ -53,13 +53,23 @@ function respondToChangeInModelSelection(event, ui) {
     material = glBoostContext.createClassicMaterial();
 
     switch (newValue) {
-    case 'moon':
+    case 'moonxx':
         var texture = glBoostContext.createTexture('resources/moon.gif');
         material.setTexture(texture);
+        break;
+    default:
+        var colorInTextRepr = ($('#colorSelectorDiffuse div').css('backgroundColor'));
+        var colorAsArray = parseCSSColor(colorInTextRepr);
+        material.diffuseColor = new GLBoost.Vector4(colorAsArray[0], colorAsArray[1], colorAsArray[2], 1.0);
     }
     // If you don't set a texture, you get a pure white opaque thing
 
     material.shaderInstance = shader;
+
+    regenerateScene();
+}
+
+function regenerateScene() {
     var geometry = glBoostContext.createSphere(
         /*radius*/20,
         /* width segments */24,
@@ -80,7 +90,7 @@ function respondToChangeInModelSelection(event, ui) {
         new GLBoost.Vector3(0, 0, 1),
         // direction of the light (x=-1 means light is at our right, pointing towards the left)
         new GLBoost.Vector3(-1, -1, -1));
-    scene.addChild( directionalLight );
+    // scene.addChild( directionalLight );
 
     var directionalLight_3 = glBoostContext.createDirectionalLight(
         // color of the light:
@@ -121,11 +131,13 @@ $('#colorSelectorAmbient').ColorPicker({
   }
 });
 
+
 $('#slider-kd').slider({value:1, max:1, step:0.01, range:"min", slide:updateLightDiffuseTerm});
 function updateLightDiffuseTerm(event, ui){
   shader.Kd = ui.value;
   $('#slider-kd-value').html(ui.value);
 }
+
 
 $('#slider-ks').slider({value:1, max:1, step:0.01, range:"min", slide:updateLightSpecularTerm});
 function updateLightSpecularTerm(event, ui){
@@ -149,7 +161,7 @@ $('#colorSelectorDiffuse').ColorPicker({
   },
   onChange: function (hsb, hex, rgb) {
     $('#colorSelectorDiffuse div').css('backgroundColor', '#' + hex);
-    shader.diffuseColor = [rgb.r/256, rgb.g/256, rgb.b/256];
+    respondToChangeInModelSelection();
   },
   onBeforeShow: function (colpkr) {
     $(colpkr).ColorPickerSetColor('rgb(0.2,0.0,0.0)');
