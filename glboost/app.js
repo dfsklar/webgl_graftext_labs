@@ -10,6 +10,7 @@ for(var i = 0; pair[i] ; i++) {
 var canvas = document.getElementById("world");
 var glBoostContext = new GLBoost.GLBoostMiddleContext(canvas);
 var expression = null;
+var geometry = null;
 
 GLBoost.VALUE_TARGET_WEBGL_VERSION = arg.webglver ? parseInt(arg.webglver) : 1;
 
@@ -45,13 +46,30 @@ respondToChangeInModelSelection();
 $("#model-selector").selectmenu({change: respondToChangeInModelSelection});
 
 function respondToChangeInModelSelection(event, ui) {
+    material = null;
+    updateMaterial();
+    regenerateScene();
+}
+
+function updateMaterial() {
     var newValue = $("#model-selector")[0].value;
 
-    material = glBoostContext.createClassicMaterial();
-
+    if (!material)
+	material = glBoostContext.createClassicMaterial();
+    
+    // AMBIENT
     var colorInTextRepr = ($('#colorSelectorAmbient div').css('backgroundColor'));
     var colorAsArray = parseCSSColor(colorInTextRepr);
-    material.ambientColor = new GLBoost.Vector4(colorAsArray[0], colorAsArray[1], colorAsArray[2], 1.0);
+    var efficiency = parseFloat($("#slider-ka-value").html());
+    shader.efficiencyAmbient = efficiency;
+    var efficiency = parseFloat($("#slider-kd-value").html());
+    shader.efficiencyDiffuse = efficiency;
+    var efficiency = parseFloat($("#slider-ks-value").html());
+    shader.efficiencySpecular = efficiency;
+    material.ambientColor = new GLBoost.Vector4(colorAsArray[0],
+						colorAsArray[1],
+						colorAsArray[2], 1.0);
+
     switch (newValue) {
     case 'moon':
         var texture = glBoostContext.createTexture('resources/moon.gif');
@@ -65,19 +83,20 @@ function respondToChangeInModelSelection(event, ui) {
         var colorAsArray = parseCSSColor(colorInTextRepr);
         material.specularColor = new GLBoost.Vector4(colorAsArray[0], colorAsArray[1], colorAsArray[2], 1.0);
     }
-    // If you don't set a texture, you get a pure white opaque thing
 
     material.shaderInstance = shader;
-
-    regenerateScene();
 }
 
+
+
+
 function regenerateScene() {
-    var geometry = glBoostContext.createSphere(
-        /*radius*/20,
-        /* width segments */24,
-        /* height segments */24,
-        /* vertex color (not required, ignored if texture loaded?  */ null);
+
+    geometry = glBoostContext.createSphere(
+					   /*radius*/20,
+					   /* width segments */24,
+					   /* height segments */24,
+					   /* vertex color (not required, ignored if texture loaded?  */ null);
 
     if (currentMajorModel) {
         scene.removeAll();  //Child(currentMajorModel);
@@ -127,7 +146,7 @@ $('#colorSelectorAmbient').ColorPicker({
   },
   onChange: function (hsb, hex, rgb) {
     $('#colorSelectorAmbient div').css('backgroundColor', '#' + hex);
-    respondToChangeInModelSelection();
+    updateMaterial();
   },
   onBeforeShow: function (colpkr) {
     $(colpkr).ColorPickerSetColor('rgb(0.2,0.0,0.0)');
@@ -135,18 +154,29 @@ $('#colorSelectorAmbient').ColorPicker({
 });
 
 
+$('#slider-ka').slider({value:1, max:1, step:0.01, range:"min", slide:updateLightAmbientTerm});
+function updateLightAmbientTerm(event, ui){
+    $('#slider-ka-value').html(ui.value);
+    var efficiency = parseFloat(ui.value);
+    shader.efficiencyAmbient = efficiency;
+    material.shaderInstance = shader;
+}
 $('#slider-kd').slider({value:1, max:1, step:0.01, range:"min", slide:updateLightDiffuseTerm});
 function updateLightDiffuseTerm(event, ui){
-  shader.Kd = ui.value;
-  $('#slider-kd-value').html(ui.value);
+    $('#slider-kd-value').html(ui.value);
+    var efficiency = parseFloat(ui.value);
+    shader.efficiencyDiffuse = efficiency;
+    material.shaderInstance = shader;
 }
-
-
 $('#slider-ks').slider({value:1, max:1, step:0.01, range:"min", slide:updateLightSpecularTerm});
 function updateLightSpecularTerm(event, ui){
-  shader.Ks = ui.value;
-  $('#slider-ks-value').html(ui.value);
+    $('#slider-ks-value').html(ui.value);
+    var efficiency = parseFloat(ui.value);
+    shader.efficiencySpecular = efficiency;
+    material.shaderInstance = shader;
 }
+
+
 
 
 
