@@ -21,12 +21,16 @@ var scene_2 = glBoostContext_2.createScene();
 var material_2 = glBoostContext_2.createClassicMaterial();
 
 // If you don't set a texture, you get a pure white opaque thing
-// var texture_2 = glBoostContext_2.createTexture('resources/texture.png');
-// material_2.setTexture(texture_2);
+var texture_2 = glBoostContext_2.createTexture('resources/moon.gif');
+material_2.setTexture(texture_2);
 
 var shader_2 = new GLBoost.PhongShader(glBoostContext_2);
 material_2.shaderInstance = shader_2;
-var geometry_2 = glBoostContext_2.createSphere(20, 24, 24, null);
+var geometry_2 = glBoostContext_2.createSphere(
+    /*radius*/20,
+    /* width segments */24,
+    /* height segments */24,
+    /* vertex color (not required, ignored if texture loaded?  */ null);
 
 var sphere = glBoostContext_2.createMesh(geometry_2, material_2);
 scene_2.addChild(sphere);
@@ -40,7 +44,7 @@ scene_2.addChild( directionalLight_2 );
 
 var directionalLight_3 = glBoostContext_2.createDirectionalLight(
     // color of the light:
-    new GLBoost.Vector3(1, 0, 0),
+    new GLBoost.Vector3(1, 1,1),
     // direction of the light (x=-1 means light is at our right, pointing towards the left)
     new GLBoost.Vector3(1, -1, -1));
 scene_2.addChild( directionalLight_3 );
