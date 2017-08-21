@@ -24,7 +24,74 @@ var texture = glBoostContext.createTexture('resources/moon.gif');
 material.setTexture(texture);
 
 var shader = new GLBoost.PhongShader(glBoostContext);
-shader.power = 1;
+shader.power = 43;
+
+
+$("#model-selector").selectmenu({change: respondToChangeInModelSelection});
+
+function respondToChangeInModelSelection(event, ui) {
+    var xx = ui;
+}
+
+
+
+$('#colorSelectorAmbient').ColorPicker({
+  onSubmit: function(hsb, hex, rgb, el) {
+    $(el).val(hex);
+    $(el).ColorPickerHide();
+  },
+  color: '#340000',
+  onShow: function (colpkr) {
+    $(colpkr).fadeIn(100);
+    return false;
+  },
+  onHide: function (colpkr) {
+    $(colpkr).fadeOut(100);
+    return false;
+  },
+  onChange: function (hsb, hex, rgb) {
+    $('#colorSelectorAmbient div').css('backgroundColor', '#' + hex);
+    renderer.ambientColor = [rgb.r/256, rgb.g/256, rgb.b/256];
+  },
+  onBeforeShow: function (colpkr) {
+    $(colpkr).ColorPickerSetColor('rgb(0.2,0.0,0.0)');
+  }
+});
+
+$('#slider-kd').slider({value:1, max:1, step:0.01, range:"min", slide:updateLightDiffuseTerm});
+function updateLightDiffuseTerm(event, ui){
+  shader.Kd = ui.value;
+  $('#slider-kd-value').html(ui.value);
+}
+
+$('#slider-ks').slider({value:1, max:1, step:0.01, range:"min", slide:updateLightSpecularTerm});
+function updateLightSpecularTerm(event, ui){
+  shader.Ks = ui.value;
+  $('#slider-ks-value').html(ui.value);
+}
+
+$('#colorSelectorDiffuse').ColorPicker({
+  onSubmit: function(hsb, hex, rgb, el) {
+    $(el).val(hex);
+    $(el).ColorPickerHide();
+  },
+  color: '#340000',
+  onShow: function (colpkr) {
+    $(colpkr).fadeIn(100);
+    return false;
+  },
+  onHide: function (colpkr) {
+    $(colpkr).fadeOut(100);
+    return false;
+  },
+  onChange: function (hsb, hex, rgb) {
+    $('#colorSelectorDiffuse div').css('backgroundColor', '#' + hex);
+    shader.diffuseColor = [rgb.r/256, rgb.g/256, rgb.b/256];
+  },
+  onBeforeShow: function (colpkr) {
+    $(colpkr).ColorPickerSetColor('rgb(0.2,0.0,0.0)');
+  }
+});
 
 function updateShininess(event, ui){
   shader.power = ui.value;
