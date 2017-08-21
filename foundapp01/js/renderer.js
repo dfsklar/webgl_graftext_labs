@@ -1,12 +1,19 @@
 // created by Thorsten Thormaehlen for educational purpose
 
+var TRACKBALL = null;
+var CAMERA = null;
+
+var SETTINGS = {
+    camera_paradigm: 'trackball'
+};
+
+
 function Renderer(canvasName, vertSrc, fragSrc)
 {
     // public member
     this.t = 0.0;
     this.modeVal = 1;
     this.lightPos = [1.0, 1.0, -1.0];
-    this.lightingColor = [1.0, 0.5, 0.5];
     this.lightVec = new Float32Array(3);
     this.ambientColor = [0.2, 0.0, 0.0];
     this.diffuseColor = [0.5, 0.0, 0.0];
@@ -18,7 +25,15 @@ function Renderer(canvasName, vertSrc, fragSrc)
     this.kdVal = 1.0;
     this.ksVal = 1.0;
 
+    
+
     // private members (inside closure)
+    // for Sklar's trackball
+    var mvMatrix = mat4.create();
+    var mvMatrixStack = [];
+    var pMatrix = mat4.create();
+    var cameraMatrix = mat4.create();
+
     var canvasName = canvasName;
     var vertSrc = vertSrc;
     var fragSrc = fragSrc;
@@ -43,13 +58,15 @@ function Renderer(canvasName, vertSrc, fragSrc)
     var shininessLoc = 0;
     var lightPosLoc = 0;
     var lightVecLoc = 0;
-    var lightingColorLoc = 0;
     var ambientColorLoc = 0;
+    var lightingColorLoc = 0;
     var diffuseColorLoc = 0;
     var specularColorLoc = 0;
     var projection = new Float32Array(16);
     var modelview = new Float32Array(16);
-    var currentFileName = "./knot.txt";
+    var currentFileName = "./physical_models/knot.txt";
+
+    
 
     // public
     this.updateShader = function (newvertSrc, newfragSrc) {
@@ -86,6 +103,18 @@ function Renderer(canvasName, vertSrc, fragSrc)
             return;
         }
 
+        
+        CAMERA = {
+            position: vec3.create(),
+            up: vec3.create()
+        };
+        vec3.set(CAMERA.position,   0, -2, 0);
+        vec3.set(CAMERA.up,   0, 0, 1);
+
+        TRACKBALL = new window.TrackballControls(CAMERA, this.canvas);
+
+        window.AXEScreate(gl);
+
         gl.enable(gl.DEPTH_TEST);
         setupShaders();
 
@@ -119,6 +148,8 @@ function Renderer(canvasName, vertSrc, fragSrc)
         }
         this.resize(this.canvas.width, this.canvas.height);
     }
+
+
 
     function loadVertexData(filename) {
         var data = new Float32Array(0);
@@ -155,29 +186,63 @@ function Renderer(canvasName, vertSrc, fragSrc)
         gl.clearColor(this.clearColor[0], this.clearColor[1], this.clearColor[2], 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
 
-        // camera orbits in the z=1.5 plane
-        // and looks at the origin
-        // mat4LookAt replaces gluLookAt
-        var rad = Math.PI / 180.0 * this.t;
 
-        mat4LookAt(modelview,
-                   1.5*Math.cos(rad), 1.5*Math.sin(rad), 1.5, // eye
-                   0.0, 0.0, 0.0, // look at
-                   0.0, 0.0, 1.0); // up
 
-        //mat4Print(modelview);
+
+        this.mode = 'fixedobj_camerarevolves';
 
         var modelviewInv = new Float32Array(16);
         var normalmatrix = new Float32Array(16);
-        mat4Invert(modelview, modelviewInv);
-        mat4Transpose(modelviewInv, normalmatrix);
+
+        if (this.mode == 'fixedobj_camerarevolvesx') {
+            // camera orbits in the z=1.5 plane
+            // and looks at the origin
+            // mat4LookAt replaces gluLookAt
+            var rad = Math.PI / 180.0 * this.t;
+
+            mat4LookAt(modelview,
+                       1.5*Math.cos(rad), 1.5*Math.sin(rad), 1.5, // eye
+                       0.0, 0.0, 0.0, // look at
+                       0.0, 0.0, 1.0); // up
+
+            //mat4Print(modelview);
+
+            // load the current projection and modelview matrix into the
+            // corresponding UNIFORM variables of the shader
+            gl.uniformMatrix4fv(projectionLoc, false, projection);
+            gl.uniformMatrix4fv(modelviewLoc, false, modelview);
+        } else {
+            TRACKBALL.update();
+            // First input param is the field of view
+            // fieldOfViewRadians, aspect, zNear, zFar
+            mat4.perspective(pMatrix,   45, gl.drawingBufferWidth / gl.drawingBufferHeight, 0.1, 100.0);
+            mat4.identity(mvMatrix);
+            mat4.lookAt(cameraMatrix,    CAMERA.position, [0, 0, 0], CAMERA.up);
+            mat4.multiply(pMatrix,   pMatrix, cameraMatrix);
+            
+            //var normalMatrix = mat3.create();
+            //mat3.normalFromMat4(normalMatrix,  mvMatrix);
+            //gl.uniformMatrix3fv(shaderProgram.nMatrixUniform, false, normalMatrix);
+
+            mat4Invert(mvMatrix, modelviewInv);
+            mat4Transpose(modelviewInv, normalmatrix);
+        }
+
+        if (false) {
+            window.AXES.draw({
+                projection: pMatrix,
+                model: mvMatrix
+            });
+
+        }
 
         gl.useProgram(progID);
 
-        // load the current projection and modelview matrix into the
-        // corresponding UNIFORM variables of the shader
-        gl.uniformMatrix4fv(projectionLoc, false, projection);
-        gl.uniformMatrix4fv(modelviewLoc, false, modelview);
+        gl.uniformMatrix4fv(projectionLoc, false, pMatrix);
+        gl.uniformMatrix4fv(modelviewLoc, false, mvMatrix);
+
+        
+
         if(normalMatrixLoc != -1)  gl.uniformMatrix4fv(normalMatrixLoc, false, normalmatrix);
         if(modeLoc != -1) gl.uniform1i(modeLoc, this.modeVal);
         if(kaLoc != -1) gl.uniform1f(kaLoc, this.kaVal);
@@ -188,12 +253,15 @@ function Renderer(canvasName, vertSrc, fragSrc)
         if(lightPosLoc != -1) gl.uniform3fv(lightPosLoc, this.lightPos);
         if(lightVecLoc != -1) gl.uniform3fv(lightVecLoc, this.lightVec);
         if(ambientColorLoc != -1) gl.uniform3fv(ambientColorLoc, this.ambientColor);
-        if(ambientColorLoc != -1) gl.uniform3fv(lightingColorLoc, this.lightingColor);
         if(diffuseColorLoc != -1) gl.uniform3fv(diffuseColorLoc, this.diffuseColor);
         if(specularColorLoc != -1) gl.uniform3fv(specularColorLoc, this.specularColor);
 
+
         gl.bindBuffer(gl.ARRAY_BUFFER, bufID);
+
+        // This next line generates the out-of-range vertices if the window.AXES.draw occurred before this
         gl.drawArrays(gl.TRIANGLES, 0, sceneVertNo);
+
     }
 
     // private
@@ -242,7 +310,7 @@ function Renderer(canvasName, vertSrc, fragSrc)
 
         // retrieve the location of the IN variables of the vertex shader
         vertexLoc = gl.getAttribLocation(progID,"inputPosition");
-        texCoordLoc =  gl.getAttribLocation(progID,"inputTexCoord");
+        texCoordLoc =  gl.getAttribLocation(progID,"inputTexCoord");  // will be -1 if the vertex shader doesn't want/support texture
         normalLoc = gl.getAttribLocation(progID, "inputNormal");
 
         // retrieve the location of the UNIFORM variables of the shader
@@ -372,44 +440,43 @@ function Renderer(canvasName, vertSrc, fragSrc)
 
     function mat4Invert(m, inverse) {
         var inv = new Float32Array(16);
-    inv[0] = m[5]*m[10]*m[15]-m[5]*m[11]*m[14]-m[9]*m[6]*m[15]+
-        m[9]*m[7]*m[14]+m[13]*m[6]*m[11]-m[13]*m[7]*m[10];
-    inv[4] = -m[4]*m[10]*m[15]+m[4]*m[11]*m[14]+m[8]*m[6]*m[15]-
-        m[8]*m[7]*m[14]-m[12]*m[6]*m[11]+m[12]*m[7]*m[10];
-    inv[8] = m[4]*m[9]*m[15]-m[4]*m[11]*m[13]-m[8]*m[5]*m[15]+
-        m[8]*m[7]*m[13]+m[12]*m[5]*m[11]-m[12]*m[7]*m[9];
-    inv[12]= -m[4]*m[9]*m[14]+m[4]*m[10]*m[13]+m[8]*m[5]*m[14]-
-        m[8]*m[6]*m[13]-m[12]*m[5]*m[10]+m[12]*m[6]*m[9];
-    inv[1] = -m[1]*m[10]*m[15]+m[1]*m[11]*m[14]+m[9]*m[2]*m[15]-
-        m[9]*m[3]*m[14]-m[13]*m[2]*m[11]+m[13]*m[3]*m[10];
-    inv[5] = m[0]*m[10]*m[15]-m[0]*m[11]*m[14]-m[8]*m[2]*m[15]+
-        m[8]*m[3]*m[14]+m[12]*m[2]*m[11]-m[12]*m[3]*m[10];
-    inv[9] = -m[0]*m[9]*m[15]+m[0]*m[11]*m[13]+m[8]*m[1]*m[15]-
-        m[8]*m[3]*m[13]-m[12]*m[1]*m[11]+m[12]*m[3]*m[9];
-    inv[13]= m[0]*m[9]*m[14]-m[0]*m[10]*m[13]-m[8]*m[1]*m[14]+
-        m[8]*m[2]*m[13]+m[12]*m[1]*m[10]-m[12]*m[2]*m[9];
-    inv[2] = m[1]*m[6]*m[15]-m[1]*m[7]*m[14]-m[5]*m[2]*m[15]+
-        m[5]*m[3]*m[14]+m[13]*m[2]*m[7]-m[13]*m[3]*m[6];
-    inv[6] = -m[0]*m[6]*m[15]+m[0]*m[7]*m[14]+m[4]*m[2]*m[15]-
-        m[4]*m[3]*m[14]-m[12]*m[2]*m[7]+m[12]*m[3]*m[6];
-    inv[10]= m[0]*m[5]*m[15]-m[0]*m[7]*m[13]-m[4]*m[1]*m[15]+
-        m[4]*m[3]*m[13]+m[12]*m[1]*m[7]-m[12]*m[3]*m[5];
-    inv[14]= -m[0]*m[5]*m[14]+m[0]*m[6]*m[13]+m[4]*m[1]*m[14]-
-        m[4]*m[2]*m[13]-m[12]*m[1]*m[6]+m[12]*m[2]*m[5];
-    inv[3] = -m[1]*m[6]*m[11]+m[1]*m[7]*m[10]+m[5]*m[2]*m[11]-
-        m[5]*m[3]*m[10]-m[9]*m[2]*m[7]+m[9]*m[3]*m[6];
-    inv[7] = m[0]*m[6]*m[11]-m[0]*m[7]*m[10]-m[4]*m[2]*m[11]+
-        m[4]*m[3]*m[10]+m[8]*m[2]*m[7]-m[8]*m[3]*m[6];
-    inv[11]= -m[0]*m[5]*m[11]+m[0]*m[7]*m[9]+m[4]*m[1]*m[11]-
-        m[4]*m[3]*m[9]-m[8]*m[1]*m[7]+m[8]*m[3]*m[5];
-    inv[15]= m[0]*m[5]*m[10]-m[0]*m[6]*m[9]-m[4]*m[1]*m[10]+
-        m[4]*m[2]*m[9]+m[8]*m[1]*m[6]-m[8]*m[2]*m[5];
+        inv[0] = m[5]*m[10]*m[15]-m[5]*m[11]*m[14]-m[9]*m[6]*m[15]+
+            m[9]*m[7]*m[14]+m[13]*m[6]*m[11]-m[13]*m[7]*m[10];
+        inv[4] = -m[4]*m[10]*m[15]+m[4]*m[11]*m[14]+m[8]*m[6]*m[15]-
+            m[8]*m[7]*m[14]-m[12]*m[6]*m[11]+m[12]*m[7]*m[10];
+        inv[8] = m[4]*m[9]*m[15]-m[4]*m[11]*m[13]-m[8]*m[5]*m[15]+
+            m[8]*m[7]*m[13]+m[12]*m[5]*m[11]-m[12]*m[7]*m[9];
+        inv[12]= -m[4]*m[9]*m[14]+m[4]*m[10]*m[13]+m[8]*m[5]*m[14]-
+            m[8]*m[6]*m[13]-m[12]*m[5]*m[10]+m[12]*m[6]*m[9];
+        inv[1] = -m[1]*m[10]*m[15]+m[1]*m[11]*m[14]+m[9]*m[2]*m[15]-
+            m[9]*m[3]*m[14]-m[13]*m[2]*m[11]+m[13]*m[3]*m[10];
+        inv[5] = m[0]*m[10]*m[15]-m[0]*m[11]*m[14]-m[8]*m[2]*m[15]+
+            m[8]*m[3]*m[14]+m[12]*m[2]*m[11]-m[12]*m[3]*m[10];
+        inv[9] = -m[0]*m[9]*m[15]+m[0]*m[11]*m[13]+m[8]*m[1]*m[15]-
+            m[8]*m[3]*m[13]-m[12]*m[1]*m[11]+m[12]*m[3]*m[9];
+        inv[13]= m[0]*m[9]*m[14]-m[0]*m[10]*m[13]-m[8]*m[1]*m[14]+
+            m[8]*m[2]*m[13]+m[12]*m[1]*m[10]-m[12]*m[2]*m[9];
+        inv[2] = m[1]*m[6]*m[15]-m[1]*m[7]*m[14]-m[5]*m[2]*m[15]+
+            m[5]*m[3]*m[14]+m[13]*m[2]*m[7]-m[13]*m[3]*m[6];
+        inv[6] = -m[0]*m[6]*m[15]+m[0]*m[7]*m[14]+m[4]*m[2]*m[15]-
+            m[4]*m[3]*m[14]-m[12]*m[2]*m[7]+m[12]*m[3]*m[6];
+        inv[10]= m[0]*m[5]*m[15]-m[0]*m[7]*m[13]-m[4]*m[1]*m[15]+
+            m[4]*m[3]*m[13]+m[12]*m[1]*m[7]-m[12]*m[3]*m[5];
+        inv[14]= -m[0]*m[5]*m[14]+m[0]*m[6]*m[13]+m[4]*m[1]*m[14]-
+            m[4]*m[2]*m[13]-m[12]*m[1]*m[6]+m[12]*m[2]*m[5];
+        inv[3] = -m[1]*m[6]*m[11]+m[1]*m[7]*m[10]+m[5]*m[2]*m[11]-
+            m[5]*m[3]*m[10]-m[9]*m[2]*m[7]+m[9]*m[3]*m[6];
+        inv[7] = m[0]*m[6]*m[11]-m[0]*m[7]*m[10]-m[4]*m[2]*m[11]+
+            m[4]*m[3]*m[10]+m[8]*m[2]*m[7]-m[8]*m[3]*m[6];
+        inv[11]= -m[0]*m[5]*m[11]+m[0]*m[7]*m[9]+m[4]*m[1]*m[11]-
+            m[4]*m[3]*m[9]-m[8]*m[1]*m[7]+m[8]*m[3]*m[5];
+        inv[15]= m[0]*m[5]*m[10]-m[0]*m[6]*m[9]-m[4]*m[1]*m[10]+
+            m[4]*m[2]*m[9]+m[8]*m[1]*m[6]-m[8]*m[2]*m[5];
 
-    var det = m[0]*inv[0]+m[1]*inv[4]+m[2]*inv[8]+m[3]*inv[12];
-    if (det == 0) return false;
-    det = 1.0 / det;
-    for (var i = 0; i < 16; i++) inverse[i] = inv[i] * det;
-    return true;
+        var det = m[0]*inv[0]+m[1]*inv[4]+m[2]*inv[8]+m[3]*inv[12];
+        if (det == 0) return false;
+        det = 1.0 / det;
+        for (var i = 0; i < 16; i++) inverse[i] = inv[i] * det;
+        return true;
     }
 }
-

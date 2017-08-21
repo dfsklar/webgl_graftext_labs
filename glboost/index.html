@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+  <title>GLBoost Multiple Contexts example</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+
+  <link href='css/colorpicker.css' type='text/css' rel='stylesheet'/>
+  <link href='css/jquery-ui.min.css' type='text/css' rel='stylesheet' />
+  <link rel="stylesheet" href="app.css">
+
+  <script type='text/javascript' src='js/jquery-1.12.4.min.js'></script>
+  <script type='text/javascript' src='js/jquery-ui-1.12.1.min.js'></script>
+  <script type='text/javascript' src='js/gl-matrix-2.4.0-min.js'></script>
+  <script type='text/javascript' src='js/colorpicker.js'></script>
+  <script type="text/javascript" src="js/trackball_glmatrix.js"></script>
+
+  <script src="glboost.js"></script>
+</head>
+<body>
+<header>
+  <p class="header-title">Lighting Lab</p>
+</header>
+<main>
+  <canvas id="world" width="465" height="465"></canvas>
+</main>
+
+<label for="model-selector">Select a model</label>
+<select name="model-selector" id="model-selector">
+      <option>Sphere, solid color</option>
+      <option selected="selected">Moon</option>
+      <option>Teapot, solid color (NYI)</option>
+</select>
+
+<table>
+ <tr>
+  <td align='right'>Ambient reflection coefficient (ka):</td><td id='slider-ka-value' width='30px'>1.0</td><td><div id='slider-ka'/></td>
+  <td align='right'>Ambient color:</td><td colspan='2'><div id='colorSelectorAmbient' class='colorSelector'><div style='background-color:rgb(52,0,0)'></div></div></td>
+  <td colspan="2">&nbsp;</td>
+ </tr>
+ <tr>
+  <td align='right'>Diffuse reflection coefficient (kd):</td><td id='slider-kd-value'  width='30px'>1.0</td><td><div id='slider-kd'/></td>
+  <td align='right'>Diffuse Color:</td><td colspan='2'><div id='colorSelectorDiffuse' class='colorSelector'><div style='background-color:rgb(128,0,0)'></div></div></td>
+ </tr>
+ <tr>
+  <td align='right'>Specular reflection coefficient (ks):</td><td id='slider-ks-value'  width='30px'>1.0</td><td><div id='slider-ks'/></td>
+  <td align='right'>Specular Color:</td><td colspan='2'><div id='colorSelectorSpecular' class='colorSelector'><div style='background-color:rgb(256,256,256)'></div></div></td>
+ </tr>
+ <tr>
+  <td align='right'>Shininess:</td><td id='slider-s-value' width='30px'>43</td><td width='150px'><div id='slider-s'/></td>
+ </tr>
+</table>
+<script src="app.js"></script>
+<script>
+$('#slider-s').slider({value:4, min:1, max:128, step:1, range:"min", slide:updateShininess});
+</script>
+</body>
+</html>
