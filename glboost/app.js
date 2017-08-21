@@ -7,50 +7,58 @@ for(var i = 0; pair[i] ; i++) {
 
 GLBoost.VALUE_TARGET_WEBGL_VERSION = arg.webglver ? parseInt(arg.webglver) : 1;
 
-// Canvas 2
-var canvas_2 = document.getElementById("world_2");
-var glBoostContext_2 = new GLBoost.GLBoostMiddleContext(canvas_2);
+var canvas = document.getElementById("world");
+var glBoostContext = new GLBoost.GLBoostMiddleContext(canvas);
 
-var renderer_2 = glBoostContext_2.createRenderer({
+var renderer = glBoostContext.createRenderer({
     // the clearColor attribute sets the background color
     clearColor: {red: 0.0, green: 0.0, blue: 0.0, alpha: 1}
 });
 
-var scene_2 = glBoostContext_2.createScene();
+var scene = glBoostContext.createScene();
 
-var material_2 = glBoostContext_2.createClassicMaterial();
+var material = glBoostContext.createClassicMaterial();
 
 // If you don't set a texture, you get a pure white opaque thing
-var texture_2 = glBoostContext_2.createTexture('resources/moon.gif');
-material_2.setTexture(texture_2);
+var texture = glBoostContext.createTexture('resources/moon.gif');
+material.setTexture(texture);
 
-var shader_2 = new GLBoost.PhongShader(glBoostContext_2);
-material_2.shaderInstance = shader_2;
-var geometry_2 = glBoostContext_2.createSphere(
+var shader = new GLBoost.PhongShader(glBoostContext);
+shader.power = 1;
+
+function updateShininess(event, ui){
+  shader.power = ui.value;
+  $('#slider-s-value').html(ui.value);
+  material.shaderInstance = shader;
+}
+
+
+material.shaderInstance = shader;
+var geometry = glBoostContext.createSphere(
     /*radius*/20,
     /* width segments */24,
     /* height segments */24,
     /* vertex color (not required, ignored if texture loaded?  */ null);
 
-var sphere = glBoostContext_2.createMesh(geometry_2, material_2);
-scene_2.addChild(sphere);
+var sphere = glBoostContext.createMesh(geometry, material);
+scene.addChild(sphere);
 
-var directionalLight_2 = glBoostContext_2.createDirectionalLight(
+var directionalLight = glBoostContext.createDirectionalLight(
     // color of the light:
     new GLBoost.Vector3(0, 0, 1),
     // direction of the light (x=-1 means light is at our right, pointing towards the left)
     new GLBoost.Vector3(-1, -1, -1));
-scene_2.addChild( directionalLight_2 );
+scene.addChild( directionalLight );
 
-var directionalLight_3 = glBoostContext_2.createDirectionalLight(
+var directionalLight_3 = glBoostContext.createDirectionalLight(
     // color of the light:
     new GLBoost.Vector3(1, 1,1),
     // direction of the light (x=-1 means light is at our right, pointing towards the left)
     new GLBoost.Vector3(1, -1, -1));
-scene_2.addChild( directionalLight_3 );
+scene.addChild( directionalLight_3 );
 
 
-var camera = glBoostContext_2.createPerspectiveCamera({
+var camera = glBoostContext.createPerspectiveCamera({
     eye: new GLBoost.Vector3(0.0, 0.0, 60.0),
     center: new GLBoost.Vector3(0.0, 0.0, 0.0),
     up: new GLBoost.Vector3(0.0, 1.0, 0.0)
@@ -61,11 +69,11 @@ var camera = glBoostContext_2.createPerspectiveCamera({
     zFar: 1000.0
 });
 
-scene_2.addChild(camera);
+scene.addChild(camera);
 
-var expression_2 = glBoostContext_2.createExpressionAndRenderPasses(1);
-expression_2.renderPasses[0].scene = scene_2;
-expression_2.prepareToRender();
+var expression = glBoostContext.createExpressionAndRenderPasses(1);
+expression.renderPasses[0].scene = scene;
+expression.prepareToRender();
 
 
 var glBoostMonitor = GLBoost.GLBoostMonitor.getInstance();
@@ -76,8 +84,8 @@ glBoostMonitor.printHierarchy();
 var framenumber = 0;  
 var render = function() {
 
-    renderer_2.clearCanvas();
-    renderer_2.draw(expression_2);
+    renderer.clearCanvas();
+    renderer.draw(expression);
 
     framenumber += 1;
     sphere.rotate = (new GLBoost.Vector3(0, framenumber, 0));
