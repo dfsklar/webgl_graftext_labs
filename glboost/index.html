@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-  <title>GLBoost Multiple Contexts example</title>
+  <title>PILL - Phong Illumination Lighting Laboratory</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -27,7 +27,7 @@
   <canvas id="world" width="465" height="465"></canvas>
 </main>
 
-<label for="model-selector">Select a model</label>
+<label for="model-selector">Model:&nbsp;</label>
 <select name="model-selector" id="model-selector">
       <option value='sphere'>Sphere, solid color</option>
       <option value='moon' selected="selected">Moon</option>
@@ -36,25 +36,48 @@
 
 <table>
  <tr>
-  <td align='right'>Ambient reflection coefficient (ka):</td><td id='slider-ka-value' width='20px'>1.0</td><td><div id='slider-ka'/></td>
-  <td align='right'>Ambient color:</td><td colspan='2'><div id='colorSelectorAmbient' class='colorSelector'><div style='background-color:rgb(52,0,0)'></div></div></td>
-  <td colspan="2">&nbsp;</td>
+  <td class='section'  align='right'>Ambient</td>
+  <td align='right'>Efficiency:</td>
+  <td id='slider-ka-value' width='20px'>1.0</td>
+  <td class='slider'><div id='slider-ka'/></td>
+  <td align='right'>Color:</td>
+  <td><div id='colorSelectorAmbient' class='colorSelector'><div style='background-color:rgb(52,0,0)'></div></div></td>
+  <td class='final'>&nbsp;</td>
+ </tr>
+
+ <tr>
+  <td class='section' align='right'>Diffuse</td>
+  <td align='right'>Efficiency:</td>
+  <td id='slider-kd-value' width='20px'>1.0</td>
+  <td class='slider'><div id='slider-kd'/></td>
+  <td align='right'>Color:</td>
+  <td><div id='colorSelectorDiffuse' class='colorSelector'><div style='background-color:rgb(148,128,0)'></div></div></td>
+  <td class='final'>&nbsp;</td>
+ </tr>
+
+ <tr>
+  <td class='section' align='right'>Specular</td>
+  <td align='right'>Efficiency:</td>
+  <td id='slider-ks-value'  width='20px'>1.0</td>
+  <td class='slider'><div id='slider-ks'/></td>
+  <td align='right'>Color:</td>
+  <td><div id='colorSelectorSpecular' class='colorSelector'><div style='background-color:rgb(256,256,256)'></div></div></td>
+  <td class='final'>&nbsp;</td>
  </tr>
  <tr>
-  <td align='right'>Diffuse reflection coefficient (kd):</td><td id='slider-kd-value'  width='20px'>1.0</td><td><div id='slider-kd'/></td>
-  <td align='right'>Diffuse Color:</td><td colspan='2'><div id='colorSelectorDiffuse' class='colorSelector'><div style='background-color:rgb(148,128,0)'></div></div></td>
+  <td>&nbsp;</td>
+  <td align='right'>Shininess:</td>
+  <td id='slider-s-value' width='20px'>43</td>
+  <td class='slider'><div id='slider-s'/></td>
+  <td></td>
+  <td class='final'></td>
  </tr>
- <tr>
-  <td align='right'>Specular reflection coefficient (ks):</td><td id='slider-ks-value'  width='20px'>1.0</td><td><div id='slider-ks'/></td>
-  <td align='right'>Specular Color:</td><td colspan='2'><div id='colorSelectorSpecular' class='colorSelector'><div style='background-color:rgb(256,256,256)'></div></div></td>
- </tr>
- <tr>
-  <td align='right'>Shininess:</td><td id='slider-s-value' width='20px'>43</td><td width='150px'><div id='slider-s'/></td>
- </tr>
+
 </table>
 <script src="app.js"></script>
 <script>
-$('#slider-s').slider({value:4, min:1, max:128, step:1, range:"min", slide:updateShininess});
+$('#slider-s').slider({value:43, min:1, max:128, step:1, range:"min", slide:updateShininess});
 </script>
+<p>By David F. Sklar, atop GLBoost by Yuki Shimada (MIT License)
 </body>
 </html>

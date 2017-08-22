@@ -3,7 +3,9 @@
   padding: 0; }
 
 body {
-  padding: 10px; }
+  padding: 10px; 
+  font-family: Arial, Helvetica, sans-serif;
+}
 
 .header-title {
   margin: 10px;
@@ -16,3 +18,36 @@ body {
   margin: 10px; }
   .menu .menu-list a {
     text-decoration: underline; }
+
+table {
+  width: 100%;
+}
+td {
+  vertical-align: bottom;
+  text-align: right;
+  padding: 4px;
+  padding-bottom: 10px;
+  font-size: 13px;
+}
+td.section {
+  font-size: 16px;
+}
+td.final {
+  width: 100%;
+}
+
+td.slider {
+  min-width: 100px !important;
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+.colorSelector {
+}
+
+p {
+  margin-top: 25px;
+  font-size: 10px;
+  text-align: right;
+}
+
