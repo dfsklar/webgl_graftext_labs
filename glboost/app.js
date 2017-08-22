@@ -69,6 +69,10 @@ function updateMaterial() {
 						colorAsArray[1],
 						colorAsArray[2], 1.0);
 
+    var colorInTextRepr = ($('#colorSelectorSpecular div').css('backgroundColor'));
+    var colorAsArray = parseCSSColor(colorInTextRepr);
+    material.specularColor = new GLBoost.Vector4(colorAsArray[0], colorAsArray[1], colorAsArray[2], 1.0);
+
     var selectedModel = $("#model-selector")[0].value;
     $('.conditional').css('display', 'none');
     switch (selectedModel) {
@@ -82,9 +86,6 @@ function updateMaterial() {
         var colorInTextRepr = ($('#colorSelectorDiffuse div').css('backgroundColor'));
         var colorAsArray = parseCSSColor(colorInTextRepr);
         material.diffuseColor = new GLBoost.Vector4(colorAsArray[0], colorAsArray[1], colorAsArray[2], 1.0);
-        var colorInTextRepr = ($('#colorSelectorSpecular div').css('backgroundColor'));
-        var colorAsArray = parseCSSColor(colorInTextRepr);
-        material.specularColor = new GLBoost.Vector4(colorAsArray[0], colorAsArray[1], colorAsArray[2], 1.0);
     }
 
     material.shaderInstance = shader;
@@ -204,8 +205,14 @@ $('#colorSelectorDiffuse').ColorPicker({
     return false;
   },
   onChange: function (hsb, hex, rgb) {
-    $('#colorSelectorDiffuse div').css('backgroundColor', '#' + hex);
-    respondToChangeInModelSelection();
+    var colorInTextRepr = '#' + hex;
+    $('#colorSelectorDiffuse div').css('backgroundColor', colorInTextRepr);
+    var colorInTextRepr = ($('#colorSelectorDiffuse div').css('backgroundColor'));
+    var colorAsArray = parseCSSColor(colorInTextRepr);
+    material.diffuseColor = new GLBoost.Vector4(colorAsArray[0],
+						colorAsArray[1],
+						colorAsArray[2], 1.0);
+    material.shaderInstance = shader;
   },
   onBeforeShow: function (colpkr) {
     $(colpkr).ColorPickerSetColor('rgb(0.2,0.0,0.0)');
@@ -229,8 +236,14 @@ $('#colorSelectorSpecular').ColorPicker({
     return false;
   },
   onChange: function (hsb, hex, rgb) {
-    $('#colorSelectorSpecular div').css('backgroundColor', '#' + hex);
-    respondToChangeInModelSelection();
+    var colorInTextRepr = '#' + hex;
+    $('#colorSelectorSpecular div').css('backgroundColor', colorInTextRepr);
+    var colorInTextRepr = ($('#colorSelectorSpecular div').css('backgroundColor'));
+    var colorAsArray = parseCSSColor(colorInTextRepr);
+    material.specularColor = new GLBoost.Vector4(colorAsArray[0],
+						 colorAsArray[1],
+						 colorAsArray[2], 1.0);
+    material.shaderInstance = shader;
   },
   onBeforeShow: function (colpkr) {
     $(colpkr).ColorPickerSetColor('rgb(0.2,0.0,0.0)');
