@@ -7,12 +7,78 @@ for(var i = 0; pair[i] ; i++) {
 
 
 
+
+
 var canvas = document.getElementById("world");
 var glBoostContext = new GLBoost.GLBoostMiddleContext(canvas);
 var expression = null;
 var geometry = null;
 
 GLBoost.VALUE_TARGET_WEBGL_VERSION = arg.webglver ? parseInt(arg.webglver) : 1;
+
+
+
+
+function loadVertexData(filename) {
+    var data = new Float32Array(0);
+    var request = new XMLHttpRequest();
+    request.open('GET', filename, false);
+    request.send(); //"false" above, will block
+
+    if (request.status != 200) {
+        alert("can not load file " + filename);
+
+    }else{
+        var floatVals = request.responseText.split('\n');
+        var numFloats = parseInt(floatVals[0]);
+        if(numFloats % (3+2+3) != 0) return data;
+        data = new Float32Array(numFloats);
+        for(var k = 0; k < numFloats; k++) {
+            data[k] = floatVals[k+1];
+        }
+    }
+    return data;
+}
+
+
+function loadTeapotGeometry() {
+    var vdata = loadVertexData('resources/teapot.txt');
+    var teapotGeometry = glBoostContext.createGeometry();
+    var positions = [];
+    var texcoords = [];
+    var colors = [];
+    var normals = [];
+
+    var scaleFactor = 33;
+    
+    var vertexColor = new GLBoost.Vector4(1, 1, 1, 1);
+
+    var i = 0;
+    while (i < vdata.length) {
+        // I'm transposing Y and Z to reorient the teapot.
+        var position = new GLBoost.Vector3(vdata[i]*scaleFactor, vdata[i+2]*scaleFactor, vdata[i+1]*scaleFactor);
+        positions.push(position);
+        texcoords.push(new GLBoost.Vector2(vdata[i+3], vdata[i+4]));
+        colors.push(vertexColor);
+        // Reminder: I'm transposing Y and Z to reorient the teapot.
+        normals.push(new GLBoost.Vector3(vdata[i+5], vdata[i+7], vdata[i+6]));
+        i += 3+2+3;
+    }
+
+    teapotGeometry.setVerticesData({
+        position: positions,
+        color: colors,
+        texcoord: texcoords,
+        normal: normals
+    }, null);
+
+    return teapotGeometry;
+}
+
+var teapotGeom = loadTeapotGeometry();
+
+
+
 
 
 var camera = glBoostContext.createPerspectiveCamera({
@@ -97,10 +163,13 @@ function updateMaterial() {
 function regenerateScene() {
 
     geometry = glBoostContext.createSphere(
-					   /*radius*/20,
-					   /* width segments */24,
-					   /* height segments */24,
-					   /* vertex color (not required, ignored if texture loaded?  */ null);
+		/*radius*/20,
+		/* width segments */24,
+		/* height segments */24,
+		/* vertex color (not required, ignored if texture loaded?  */ null);
+
+    geometry = teapotGeom;
+    
 
     if (currentMajorModel) {
         scene.removeAll();  //Child(currentMajorModel);
