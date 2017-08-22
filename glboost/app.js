@@ -148,8 +148,14 @@ $('#colorSelectorAmbient').ColorPicker({
     return false;
   },
   onChange: function (hsb, hex, rgb) {
-    $('#colorSelectorAmbient div').css('backgroundColor', '#' + hex);
-    updateMaterial();
+    var colorInTextRepr = '#' + hex;
+    $('#colorSelectorAmbient div').css('backgroundColor', colorInTextRepr);
+    var colorInTextRepr = ($('#colorSelectorAmbient div').css('backgroundColor'));
+    var colorAsArray = parseCSSColor(colorInTextRepr);
+    material.ambientColor = new GLBoost.Vector4(colorAsArray[0],
+						colorAsArray[1],
+						colorAsArray[2], 1.0);
+    material.shaderInstance = shader;
   },
   onBeforeShow: function (colpkr) {
     $(colpkr).ColorPickerSetColor('rgb(0.2,0.0,0.0)');
