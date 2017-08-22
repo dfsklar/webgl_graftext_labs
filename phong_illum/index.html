@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-  <title>PILL - Phong Illumination Lighting Laboratory</title>
+  <title>Phong Illumination Lab</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -25,15 +25,16 @@
 <header>
   <div class="header-title">Phong Illumination Laboratory</div>
 </header>
-<main>
-  <canvas id="world" width="465" height="465"></canvas>
-</main>
-
+<main style='width:470px'>
+  <canvas id="world" width="450" height="450"></canvas>
+  <br/>
+<p class='coming-soon'>Coming soon: interactive camera control, multiple lights, teapot model.</p>
+  
 <label for="model-selector">Model:&nbsp;</label>
 <select name="model-selector" id="model-selector">
       <option value='sphere'>Sphere, solid color</option>
       <option value='moon' selected="selected">Moon</option>
-      <option disabled='disabled' value='teapot'>Teapot, solid color (NYI)</option>
+      <option disabled='disabled' value='teapot'>Teapot, solid color (coming soon)</option>
 </select>
 
 <table>
@@ -79,11 +80,13 @@
  </tr>
 
 </table>
+
 <script src="app.js"></script>
 <script>
 $('#slider-s').slider({value:43, min:1, max:128, step:1, range:"min", slide:updateShininess});
 </script>
 <p>Constructed by <b>David F. Sklar</b><br/>with gratitude to Yuki Shimada for the GLBoost engine.<br/>
 MIT License.
+</main>
 </body>
 </html>

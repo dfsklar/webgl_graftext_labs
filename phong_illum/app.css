@@ -80,3 +80,11 @@ p {
   text-align: right;
 }
 
+
+.coming-soon {
+    position: relative;
+    color: grey;
+    margin-top: -18px;
+    padding-right: 30px;
+    padding-bottom: 25px;
+}
