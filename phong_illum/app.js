@@ -77,6 +77,13 @@ function loadTeapotGeometry() {
 
 var teapotGeom = loadTeapotGeometry();
 
+function createSphere() {
+    return glBoostContext.createSphere(
+	    /*radius*/20,
+	    /* width segments */24,
+	    /* height segments */24,
+	    /* vertex color (not required, ignored if texture loaded?  */ null);
+}
 
 
 
@@ -99,12 +106,8 @@ var renderer = glBoostContext.createRenderer({
 
 var currentMajorModel = null;
 var material = null;
-
-var scene = glBoostContext.createScene();
-
-
-var shader = new GLBoost.PhongShader(glBoostContext);
-shader.power = 43;
+var scene = null;
+var shader = null;
 
 respondToChangeInModelSelection();
 
@@ -112,15 +115,17 @@ respondToChangeInModelSelection();
 $("#model-selector").selectmenu({change: respondToChangeInModelSelection});
 
 function respondToChangeInModelSelection(event, ui) {
+    shader = new GLBoost.PhongShader(glBoostContext);
+    shader.power = 43;
+    scene = glBoostContext.createScene();
     material = null;
     updateMaterial();
     regenerateScene();
 }
 
 function updateMaterial() {
-
     if (!material)
-	material = glBoostContext.createClassicMaterial();
+	    material = glBoostContext.createClassicMaterial();
     
     // AMBIENT
     var colorInTextRepr = ($('#colorSelectorAmbient div').css('backgroundColor'));
@@ -132,8 +137,8 @@ function updateMaterial() {
     var efficiency = parseFloat($("#slider-ks-value").html());
     shader.efficiencySpecular = efficiency;
     material.ambientColor = new GLBoost.Vector4(colorAsArray[0],
-						colorAsArray[1],
-						colorAsArray[2], 1.0);
+						                        colorAsArray[1],
+						                        colorAsArray[2], 1.0);
 
     var colorInTextRepr = ($('#colorSelectorSpecular div').css('backgroundColor'));
     var colorAsArray = parseCSSColor(colorInTextRepr);
@@ -145,10 +150,10 @@ function updateMaterial() {
     case 'moon':
         var texture = glBoostContext.createTexture('resources/moon.gif');
         material.setTexture(texture);
-	$('.conditional.explanation').css('display', 'block');
+	    $('.conditional.explanation').css('display', 'block');
         break;
     default:
-	$('.conditional.colorSelector').css('display', 'block');
+	    $('.conditional.colorSelector').css('display', 'block');
         var colorInTextRepr = ($('#colorSelectorDiffuse div').css('backgroundColor'));
         var colorAsArray = parseCSSColor(colorInTextRepr);
         material.diffuseColor = new GLBoost.Vector4(colorAsArray[0], colorAsArray[1], colorAsArray[2], 1.0);
@@ -162,14 +167,15 @@ function updateMaterial() {
 
 function regenerateScene() {
 
-    geometry = glBoostContext.createSphere(
-		/*radius*/20,
-		/* width segments */24,
-		/* height segments */24,
-		/* vertex color (not required, ignored if texture loaded?  */ null);
-
-    geometry = teapotGeom;
-    
+    var selectedModel = $("#model-selector")[0].value;
+    switch (selectedModel) {
+    case 'teapot':
+        geometry = teapotGeom;
+        break;
+    default:
+        geometry = createSphere();
+        break;
+    }
 
     if (currentMajorModel) {
         scene.removeAll();  //Child(currentMajorModel);
@@ -180,12 +186,14 @@ function regenerateScene() {
     scene.addChild(sphere);
     currentMajorModel = sphere;
 
-    var directionalLight = glBoostContext.createDirectionalLight(
-        // color of the light:
-        new GLBoost.Vector3(0, 0, 1),
-        // direction of the light (x=-1 means light is at our right, pointing towards the left)
-        new GLBoost.Vector3(-1, -1, -1));
-    // scene.addChild( directionalLight );
+    /* EXTRA LIGHT for later
+       var directionalLight = glBoostContext.createDirectionalLight(
+       // color of the light:
+       new GLBoost.Vector3(0, 0, 1),
+       // direction of the light (x=-1 means light is at our right, pointing towards the left)
+       new GLBoost.Vector3(-1, -1, -1));
+       scene.addChild( directionalLight );
+    */
 
     var directionalLight_3 = glBoostContext.createDirectionalLight(
         // color of the light:
@@ -204,32 +212,32 @@ function regenerateScene() {
 
 
 $('#colorSelectorAmbient').ColorPicker({
-  onSubmit: function(hsb, hex, rgb, el) {
-    $(el).val(hex);
-    $(el).ColorPickerHide();
-  },
-  color: '#340000',
-  onShow: function (colpkr) {
-    $(colpkr).fadeIn(100);
-    return false;
-  },
-  onHide: function (colpkr) {
-    $(colpkr).fadeOut(100);
-    return false;
-  },
-  onChange: function (hsb, hex, rgb) {
-    var colorInTextRepr = '#' + hex;
-    $('#colorSelectorAmbient div').css('backgroundColor', colorInTextRepr);
-    var colorInTextRepr = ($('#colorSelectorAmbient div').css('backgroundColor'));
-    var colorAsArray = parseCSSColor(colorInTextRepr);
-    material.ambientColor = new GLBoost.Vector4(colorAsArray[0],
-						colorAsArray[1],
-						colorAsArray[2], 1.0);
-    material.shaderInstance = shader;
-  },
-  onBeforeShow: function (colpkr) {
-    $(colpkr).ColorPickerSetColor('rgb(0.2,0.0,0.0)');
-  }
+    onSubmit: function(hsb, hex, rgb, el) {
+        $(el).val(hex);
+        $(el).ColorPickerHide();
+    },
+    color: '#340000',
+    onShow: function (colpkr) {
+        $(colpkr).fadeIn(100);
+        return false;
+    },
+    onHide: function (colpkr) {
+        $(colpkr).fadeOut(100);
+        return false;
+    },
+    onChange: function (hsb, hex, rgb) {
+        var colorInTextRepr = '#' + hex;
+        $('#colorSelectorAmbient div').css('backgroundColor', colorInTextRepr);
+        var colorInTextRepr = ($('#colorSelectorAmbient div').css('backgroundColor'));
+        var colorAsArray = parseCSSColor(colorInTextRepr);
+        material.ambientColor = new GLBoost.Vector4(colorAsArray[0],
+						                            colorAsArray[1],
+						                            colorAsArray[2], 1.0);
+        material.shaderInstance = shader;
+    },
+    onBeforeShow: function (colpkr) {
+        $(colpkr).ColorPickerSetColor('rgb(0.2,0.0,0.0)');
+    }
 });
 
 
@@ -260,63 +268,63 @@ function updateLightSpecularTerm(event, ui){
 
 
 $('#colorSelectorDiffuse').ColorPicker({
-  onSubmit: function(hsb, hex, rgb, el) {
-    $(el).val(hex);
-    $(el).ColorPickerHide();
-  },
-  color: '#340000',
-  onShow: function (colpkr) {
-    $(colpkr).fadeIn(100);
-    return false;
-  },
-  onHide: function (colpkr) {
-    $(colpkr).fadeOut(100);
-    return false;
-  },
-  onChange: function (hsb, hex, rgb) {
-    var colorInTextRepr = '#' + hex;
-    $('#colorSelectorDiffuse div').css('backgroundColor', colorInTextRepr);
-    var colorInTextRepr = ($('#colorSelectorDiffuse div').css('backgroundColor'));
-    var colorAsArray = parseCSSColor(colorInTextRepr);
-    material.diffuseColor = new GLBoost.Vector4(colorAsArray[0],
-						colorAsArray[1],
-						colorAsArray[2], 1.0);
-    material.shaderInstance = shader;
-  },
-  onBeforeShow: function (colpkr) {
-    $(colpkr).ColorPickerSetColor('rgb(0.2,0.0,0.0)');
-  }
+    onSubmit: function(hsb, hex, rgb, el) {
+        $(el).val(hex);
+        $(el).ColorPickerHide();
+    },
+    color: '#340000',
+    onShow: function (colpkr) {
+        $(colpkr).fadeIn(100);
+        return false;
+    },
+    onHide: function (colpkr) {
+        $(colpkr).fadeOut(100);
+        return false;
+    },
+    onChange: function (hsb, hex, rgb) {
+        var colorInTextRepr = '#' + hex;
+        $('#colorSelectorDiffuse div').css('backgroundColor', colorInTextRepr);
+        var colorInTextRepr = ($('#colorSelectorDiffuse div').css('backgroundColor'));
+        var colorAsArray = parseCSSColor(colorInTextRepr);
+        material.diffuseColor = new GLBoost.Vector4(colorAsArray[0],
+						                            colorAsArray[1],
+						                            colorAsArray[2], 1.0);
+        material.shaderInstance = shader;
+    },
+    onBeforeShow: function (colpkr) {
+        $(colpkr).ColorPickerSetColor('rgb(0.2,0.0,0.0)');
+    }
 });
 
 
 
 $('#colorSelectorSpecular').ColorPicker({
-  onSubmit: function(hsb, hex, rgb, el) {
-    $(el).val(hex);
-    $(el).ColorPickerHide();
-  },
-  color: '#340000',
-  onShow: function (colpkr) {
-    $(colpkr).fadeIn(100);
-    return false;
-  },
-  onHide: function (colpkr) {
-    $(colpkr).fadeOut(100);
-    return false;
-  },
-  onChange: function (hsb, hex, rgb) {
-    var colorInTextRepr = '#' + hex;
-    $('#colorSelectorSpecular div').css('backgroundColor', colorInTextRepr);
-    var colorInTextRepr = ($('#colorSelectorSpecular div').css('backgroundColor'));
-    var colorAsArray = parseCSSColor(colorInTextRepr);
-    material.specularColor = new GLBoost.Vector4(colorAsArray[0],
-						 colorAsArray[1],
-						 colorAsArray[2], 1.0);
-    material.shaderInstance = shader;
-  },
-  onBeforeShow: function (colpkr) {
-    $(colpkr).ColorPickerSetColor('rgb(0.2,0.0,0.0)');
-  }
+    onSubmit: function(hsb, hex, rgb, el) {
+        $(el).val(hex);
+        $(el).ColorPickerHide();
+    },
+    color: '#340000',
+    onShow: function (colpkr) {
+        $(colpkr).fadeIn(100);
+        return false;
+    },
+    onHide: function (colpkr) {
+        $(colpkr).fadeOut(100);
+        return false;
+    },
+    onChange: function (hsb, hex, rgb) {
+        var colorInTextRepr = '#' + hex;
+        $('#colorSelectorSpecular div').css('backgroundColor', colorInTextRepr);
+        var colorInTextRepr = ($('#colorSelectorSpecular div').css('backgroundColor'));
+        var colorAsArray = parseCSSColor(colorInTextRepr);
+        material.specularColor = new GLBoost.Vector4(colorAsArray[0],
+						                             colorAsArray[1],
+						                             colorAsArray[2], 1.0);
+        material.shaderInstance = shader;
+    },
+    onBeforeShow: function (colpkr) {
+        $(colpkr).ColorPickerSetColor('rgb(0.2,0.0,0.0)');
+    }
 });
 
 
