@@ -38,7 +38,7 @@
  <tr>
   <td class='section'  align='right'>Ambient</td>
   <td align='right'>Efficiency:</td>
-  <td id='slider-ka-value' width='20px'>1.0</td>
+  <td id='slider-ka-value' class='numeric'>1.0</td>
   <td class='slider'><div id='slider-ka'/></td>
   <td align='right'>Color:</td>
   <td><div id='colorSelectorAmbient' class='colorSelector'><div style='background-color:rgb(52,0,0)'></div></div></td>
@@ -48,7 +48,7 @@
  <tr>
   <td class='section' align='right'>Diffuse</td>
   <td align='right'>Efficiency:</td>
-  <td id='slider-kd-value' width='20px'>1.0</td>
+  <td id='slider-kd-value' class='numeric'>1.0</td>
   <td class='slider'><div id='slider-kd'/></td>
   <td align='right'>Color:</td>
   <td><div id='colorSelectorDiffuse' class='colorSelector'><div style='background-color:rgb(148,128,0)'></div></div></td>
@@ -56,18 +56,17 @@
  </tr>
 
  <tr>
-  <td class='section' align='right'>Specular</td>
+  <td rowspan='2' class='section' align='right'>Specular</td>
   <td align='right'>Efficiency:</td>
-  <td id='slider-ks-value'  width='20px'>1.0</td>
+  <td id='slider-ks-value'  class='numeric'>1.0</td>
   <td class='slider'><div id='slider-ks'/></td>
   <td align='right'>Color:</td>
   <td><div id='colorSelectorSpecular' class='colorSelector'><div style='background-color:rgb(256,256,256)'></div></div></td>
   <td class='final'>&nbsp;</td>
  </tr>
  <tr>
-  <td>&nbsp;</td>
   <td align='right'>Shininess:</td>
-  <td id='slider-s-value' width='20px'>43</td>
+  <td id='slider-s-value' class='numeric'>43</td>
   <td class='slider'><div id='slider-s'/></td>
   <td></td>
   <td class='final'></td>
@@ -78,6 +77,7 @@
 <script>
 $('#slider-s').slider({value:43, min:1, max:128, step:1, range:"min", slide:updateShininess});
 </script>
-<p>By David F. Sklar, atop GLBoost by Yuki Shimada (MIT License)
+<p>By David F. Sklar atop GLBoost by Yuki Shimada<br/>
+github.com/dfsklar/phongillumlab<br/>MIT License
 </body>
 </html>
