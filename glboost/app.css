@@ -8,6 +8,7 @@
   font-style: italic;
   text-align: left;
   font-size: 11px;
+  margin-top: 23px;
 }			
 
 .hidden {
@@ -20,8 +21,11 @@ body {
 }
 
 .header-title {
-  margin: 10px;
-  font-size: 1em; 
+  text-align: left;
+  color: navy;
+  margin-bottom: 10px;
+  font-family: 'Baloo Bhaijaan', Arial;
+  font-size: 20px;
 }
 
 .menu .menu-list {
