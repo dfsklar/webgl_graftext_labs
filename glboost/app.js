@@ -52,7 +52,6 @@ function respondToChangeInModelSelection(event, ui) {
 }
 
 function updateMaterial() {
-    var newValue = $("#model-selector")[0].value;
 
     if (!material)
 	material = glBoostContext.createClassicMaterial();
@@ -70,12 +69,16 @@ function updateMaterial() {
 						colorAsArray[1],
 						colorAsArray[2], 1.0);
 
-    switch (newValue) {
+    var selectedModel = $("#model-selector")[0].value;
+    $('.conditional').css('display', 'none');
+    switch (selectedModel) {
     case 'moon':
         var texture = glBoostContext.createTexture('resources/moon.gif');
         material.setTexture(texture);
+	$('.conditional.explanation').css('display', 'block');
         break;
     default:
+	$('.conditional.colorSelector').css('display', 'block');
         var colorInTextRepr = ($('#colorSelectorDiffuse div').css('backgroundColor'));
         var colorAsArray = parseCSSColor(colorInTextRepr);
         material.diffuseColor = new GLBoost.Vector4(colorAsArray[0], colorAsArray[1], colorAsArray[2], 1.0);

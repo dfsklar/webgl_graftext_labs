@@ -45,13 +45,16 @@
   <td class='final'>&nbsp;</td>
  </tr>
 
- <tr>
+ <tr class='diffuse'>
   <td class='section' align='right'>Diffuse</td>
   <td align='right'>Efficiency:</td>
   <td id='slider-kd-value' class='numeric'>1.0</td>
   <td class='slider'><div id='slider-kd'/></td>
   <td align='right'>Color:</td>
-  <td><div id='colorSelectorDiffuse' class='colorSelector'><div style='background-color:rgb(148,128,0)'></div></div></td>
+  <td>
+    <div class='conditional hidden colorSelector' id='colorSelectorDiffuse'><div style='background-color:rgb(148,128,0)'></div></div>
+    <div class='conditional hidden explanation'>Dictated by the texture</div>
+  </td>
   <td class='final'>&nbsp;</td>
  </tr>
 
@@ -64,6 +67,7 @@
   <td><div id='colorSelectorSpecular' class='colorSelector'><div style='background-color:rgb(256,256,256)'></div></div></td>
   <td class='final'>&nbsp;</td>
  </tr>
+
  <tr>
   <td align='right'>Shininess:</td>
   <td id='slider-s-value' class='numeric'>43</td>
