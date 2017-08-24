@@ -139,6 +139,9 @@
 				current.preview = current.cal.data('colorpicker').livePreview;
 				$(document).bind('mouseup', current, upHue);
 				$(document).bind('mousemove', current, moveHue);
+                // Next two lines added by DFSklarD to allow click in the hue strip to be immediately processed
+                ev.data = current;
+                moveHue(ev);
 			},
 			moveHue = function (ev) {
 				change.apply(
@@ -166,6 +169,9 @@
 				current.preview = current.cal.data('colorpicker').livePreview;
 				$(document).bind('mouseup', current, upSelector);
 				$(document).bind('mousemove', current, moveSelector);
+                // Next two lines added by DFSklarD to allow click in the saturation/value area to be immediately processed
+                ev.data = current;
+                moveSelector(ev);
 			},
 			moveSelector = function (ev) {
 				change.apply(
