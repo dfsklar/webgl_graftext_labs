@@ -19,9 +19,14 @@ GLBoost.VALUE_TARGET_WEBGL_VERSION = arg.webglver ? parseInt(arg.webglver) : 1;
 
 
 
+var vertexData = {
+    teapot: null
+};
+
 function loadVertexData(filename) {
     var data = new Float32Array(0);
     var request = new XMLHttpRequest();
+    console.log('Expensive load-vertex-data operation...');
     request.open('GET', filename, false);
     request.send(); //"false" above, will block
 
@@ -42,7 +47,8 @@ function loadVertexData(filename) {
 
 
 function loadTeapotGeometry() {
-    var vdata = loadVertexData('resources/teapot.txt');
+    var vdata = vertexData.teapot || loadVertexData('resources/teapot.txt');
+    vertexData.teapot = vdata;
     var teapotGeometry = glBoostContext.createGeometry();
     var positions = [];
     var texcoords = [];
@@ -104,12 +110,27 @@ var renderer = glBoostContext.createRenderer({
     clearColor: {red: 0.0, green: 0.0, blue: 0.0, alpha: 1}
 });
 
+// MALLEABLE LIGHT
+var directionalLightColor = new GLBoost.Vector3(0, 0, 1);
+var directionalLightDirection = new GLBoost.Vector3(-3, 1, -1);
+var directionalLight = glBoostContext.createDirectionalLight(directionalLightColor, directionalLightDirection);
+
+// WHITE LIGHT
+var directionalLight_white = glBoostContext.createDirectionalLight(
+        // color of the light:
+        new GLBoost.Vector3(1, 1, 1),
+        // direction of the light (x=-1 means light is at our right, pointing towards the left)
+        new GLBoost.Vector3(2.8, -2, -1));
+
+
 var currentMajorModel = null;
 var material = null;
 var scene = null;
 var shader = null;
 
+
 respondToChangeInModelSelection();
+
 
 
 $("#model-selector").selectmenu({change: respondToChangeInModelSelection});
@@ -170,6 +191,7 @@ function regenerateScene() {
     var selectedModel = $("#model-selector")[0].value;
     switch (selectedModel) {
     case 'teapot':
+        teapotGeom = loadTeapotGeometry();
         geometry = teapotGeom;
         break;
     default:
@@ -177,30 +199,14 @@ function regenerateScene() {
         break;
     }
 
-    if (currentMajorModel) {
-        scene.removeAll();  //Child(currentMajorModel);
-        currentMajorModel = null;
-    }
+    scene = glBoostContext.createScene();
 
-    var sphere = glBoostContext.createMesh(geometry, material);
-    scene.addChild(sphere);
-    currentMajorModel = sphere;
+    var mesh = glBoostContext.createMesh(geometry, material);
+    scene.addChild(mesh);
+    currentMajorModel = mesh;
 
-    /* EXTRA LIGHT for later
-       var directionalLight = glBoostContext.createDirectionalLight(
-       // color of the light:
-       new GLBoost.Vector3(0, 0, 1),
-       // direction of the light (x=-1 means light is at our right, pointing towards the left)
-       new GLBoost.Vector3(-1, -1, -1));
-       scene.addChild( directionalLight );
-    */
-
-    var directionalLight_3 = glBoostContext.createDirectionalLight(
-        // color of the light:
-        new GLBoost.Vector3(1, 1,1),
-        // direction of the light (x=-1 means light is at our right, pointing towards the left)
-        new GLBoost.Vector3(1, -1, -1));
-    scene.addChild( directionalLight_3 );
+    scene.addChild( directionalLight );
+    scene.addChild( directionalLight_white );
 
     scene.addChild(camera);
 
@@ -239,6 +245,41 @@ $('#colorSelectorAmbient').ColorPicker({
         $(colpkr).ColorPickerSetColor('rgb(0.2,0.0,0.0)');
     }
 });
+
+
+
+
+
+
+$('#colorSelectorLightRight').ColorPicker({
+    onSubmit: function(hsb, hex, rgb, el) {
+        $(el).val(hex);
+        $(el).ColorPickerHide();
+    },
+    color: '#0000FF',
+    onShow: function (colpkr) {
+        $(colpkr).fadeIn(100);
+        return false;
+    },
+    onHide: function (colpkr) {
+        $(colpkr).fadeOut(100);
+        return false;
+    },
+    onChange: function (hsb, hex, rgb) {
+        var colorInTextRepr = '#' + hex;
+        $('#colorSelectorLightRight div').css('backgroundColor', colorInTextRepr);
+        var colorInTextRepr = ($('#colorSelectorLightRight div').css('backgroundColor'));
+        var colorAsArray = parseCSSColor(colorInTextRepr);
+        directionalLightColor = new GLBoost.Vector3(colorAsArray[0], colorAsArray[1], colorAsArray[2]);
+        directionalLight = glBoostContext.createDirectionalLight(directionalLightColor, directionalLightDirection);
+        regenerateScene();
+    },
+    onBeforeShow: function (colpkr) {
+        $(colpkr).ColorPickerSetColor('rgb(0.2,0.0,0.0)');
+    }
+});
+
+
 
 
 $('#slider-ka').slider({value:1, max:1, step:0.01, range:"min", slide:updateLightAmbientTerm});
@@ -346,17 +387,11 @@ glBoostMonitor.printHierarchy();
 var framenumber = 0;  
 var render = function() {
 
+    currentMajorModel.rotate = (new GLBoost.Vector3(0, framenumber*0.5, 0));
+    framenumber += 1;
+
     renderer.clearCanvas();
     renderer.draw(expression);
-
-    framenumber += 1;
-    currentMajorModel.rotate = (new GLBoost.Vector3(0, framenumber*0.5, 0));
-    
-    // Each frame we rotate the camera:
-    //var rotateMatrixY = GLBoost.Matrix33.rotateY(-0.3);
-    // var rotatedVector = rotateMatrixY.multiplyVector(camera.eye);
-    // This is only rotating the camera:
-    //  camera.eye = rotatedVector;
 
     requestAnimationFrame(render);
 };

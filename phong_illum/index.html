@@ -24,11 +24,14 @@
 <body>
 <header>
   <div class="header-title">Phong Illumination Laboratory</div>
-</header>
-<main style='width:470px'>
-  <canvas id="world" width="450" height="450"></canvas>
-  <br/>
-<p class='coming-soon'>Coming soon: interactive camera control, multiple lights.</p>
+  </header>
+
+  <table class='outer'>
+    <tr>
+      <td>
+        <canvas id="world" width="450" height="450"></canvas>
+      </td>
+      <td>
   
 <label for="model-selector">Model:&nbsp;</label>
 <select name="model-selector" id="model-selector">
@@ -37,7 +40,16 @@
       <option value='teapot'>Teapot, solid color</option>
 </select>
 
-<table>
+<table class='controls'>
+ <tr>
+  <td class='section'  align='right'>Lights</td>
+  <td colspan=2>Left: solid white</td>
+  <td colspan=2>Right: your choice:</td>
+  <td><div id='colorSelectorLightRight' class='colorSelector'><div style='background-color:rgb(0,0,255)'></div></div></td>
+  <td class='final'>&nbsp;</td>
+ </tr>
+
+
  <tr>
   <td class='section'  align='right'>Ambient</td>
   <td align='right'>Efficiency:</td>
@@ -48,6 +60,7 @@
   <td class='final'>&nbsp;</td>
  </tr>
 
+ 
  <tr class='diffuse'>
   <td class='section' align='right'>Diffuse</td>
   <td align='right'>Efficiency:</td>
@@ -80,6 +93,9 @@
  </tr>
 
 </table>
+</td>
+</tr>
+</table>
 
 <script src="app.js"></script>
 <script>
@@ -87,6 +103,5 @@ $('#slider-s').slider({value:43, min:1, max:128, step:1, range:"min", slide:upda
 </script>
 <p>Constructed by <b>David F. Sklar</b><br/>with gratitude to Yuki Shimada for the GLBoost engine.<br/>
 MIT License.
-</main>
 </body>
 </html>
