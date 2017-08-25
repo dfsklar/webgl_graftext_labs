@@ -19,11 +19,13 @@ GLBoost.VALUE_TARGET_WEBGL_VERSION = arg.webglver ? parseInt(arg.webglver) : 1;
 
 
 
-var vertexData = {
-    teapot: null
+var vertexDataCache = {
 };
 
 function loadVertexData(filename) {
+    if (vertexDataCache[filename])
+        return vertexDataCache[filename];
+    ///////
     var data = new Float32Array(0);
     var request = new XMLHttpRequest();
     console.log('Expensive load-vertex-data operation...');
@@ -32,7 +34,6 @@ function loadVertexData(filename) {
 
     if (request.status != 200) {
         alert("can not load file " + filename);
-
     }else{
         var floatVals = request.responseText.split('\n');
         var numFloats = parseInt(floatVals[0]);
@@ -41,15 +42,15 @@ function loadVertexData(filename) {
         for(var k = 0; k < numFloats; k++) {
             data[k] = floatVals[k+1];
         }
+        vertexDataCache[filename] = data;
+        return data;
     }
-    return data;
 }
 
 
-function loadTeapotGeometry() {
-    var vdata = vertexData.teapot || loadVertexData('resources/teapot.txt');
-    vertexData.teapot = vdata;
-    var teapotGeometry = glBoostContext.createGeometry();
+function loadShapeGeometry(shapename) {
+    var vdata = loadVertexData('resources/' + shapename + '.txt');
+    var shapeGeometry = glBoostContext.createGeometry();
     var positions = [];
     var texcoords = [];
     var colors = [];
@@ -61,7 +62,7 @@ function loadTeapotGeometry() {
 
     var i = 0;
     while (i < vdata.length) {
-        // I'm transposing Y and Z to reorient the teapot.
+        // I'm transposing Y and Z to reorient these models, which had Y and Z transposed
         var position = new GLBoost.Vector3(vdata[i]*scaleFactor, vdata[i+2]*scaleFactor, vdata[i+1]*scaleFactor);
         positions.push(position);
         texcoords.push(new GLBoost.Vector2(vdata[i+3], vdata[i+4]));
@@ -71,17 +72,20 @@ function loadTeapotGeometry() {
         i += 3+2+3;
     }
 
-    teapotGeometry.setVerticesData({
+    shapeGeometry.setVerticesData({
         position: positions,
         color: colors,
         texcoord: texcoords,
         normal: normals
     }, null);
 
-    return teapotGeometry;
+    return shapeGeometry;
 }
 
-var teapotGeom = loadTeapotGeometry();
+// Warm up the cache
+loadShapeGeometry('teapot');
+loadShapeGeometry('knot');
+
 
 function createSphere() {
     return glBoostContext.createSphere(
@@ -191,8 +195,8 @@ function regenerateScene() {
     var selectedModel = $("#model-selector")[0].value;
     switch (selectedModel) {
     case 'teapot':
-        teapotGeom = loadTeapotGeometry();
-        geometry = teapotGeom;
+    case 'knot':
+        geometry = loadShapeGeometry(selectedModel);
         break;
     default:
         geometry = createSphere();
