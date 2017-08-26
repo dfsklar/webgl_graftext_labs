@@ -398,11 +398,10 @@ var framenumber = 0;
 var render = function() {
 
     TRACKBALL.update();
-    perspCamera.eye = {
-        x: camera.position[0],
-        y: camera.position[1],
-        z: camera.position[2]
-    };
+    perspCamera.eye = new GLBoost.Vector3(
+        camera.position[0],
+        camera.position[1],
+        camera.position[2]);
 
     currentMajorModel.rotate = (new GLBoost.Vector3(0, framenumber*0.5, 0));
     framenumber += 1;
