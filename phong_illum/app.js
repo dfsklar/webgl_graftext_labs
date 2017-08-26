@@ -7,6 +7,12 @@ for(var i = 0; pair[i] ; i++) {
 
 
 
+var camera = {
+    position: vec3.create(),
+    up: vec3.create()
+};
+vec3.set(camera.position,   0, 0, 60);
+vec3.set(camera.up,         0, 1, 0);
 
 
 var canvas = document.getElementById("world");
@@ -16,7 +22,7 @@ var geometry = null;
 
 GLBoost.VALUE_TARGET_WEBGL_VERSION = arg.webglver ? parseInt(arg.webglver) : 1;
 
-
+var TRACKBALL = new window.TrackballControls(camera, canvas);
 
 
 var vertexDataCache = {
@@ -98,7 +104,7 @@ function createSphere() {
 
 
 
-var camera = glBoostContext.createPerspectiveCamera({
+var perspCamera = glBoostContext.createPerspectiveCamera({
     eye: new GLBoost.Vector3(0.0, 0.0, 60.0),
     center: new GLBoost.Vector3(0.0, 0.0, 0.0),
     up: new GLBoost.Vector3(0.0, 1.0, 0.0)
@@ -212,7 +218,7 @@ function regenerateScene() {
     scene.addChild( directionalLight );
     scene.addChild( directionalLight_white );
 
-    scene.addChild(camera);
+    scene.addChild(perspCamera);
 
     expression = glBoostContext.createExpressionAndRenderPasses(1);
     expression.renderPasses[0].scene = scene;
@@ -390,6 +396,13 @@ glBoostMonitor.printHierarchy();
 
 var framenumber = 0;  
 var render = function() {
+
+    TRACKBALL.update();
+    perspCamera.eye = {
+        x: camera.position[0],
+        y: camera.position[1],
+        z: camera.position[2]
+    };
 
     currentMajorModel.rotate = (new GLBoost.Vector3(0, framenumber*0.5, 0));
     framenumber += 1;
