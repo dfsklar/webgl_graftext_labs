@@ -98,3 +98,8 @@ p {
     padding-right: 30px;
     padding-bottom: 25px;
 }
+
+div.instructions {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}

@@ -11,9 +11,13 @@ var camera = {
     position: vec3.create(),
     up: vec3.create()
 };
-vec3.set(camera.position,   0, 0, 60);
-vec3.set(camera.up,         0, 1, 0);
 
+function resetCamera() {
+    vec3.set(camera.position,   0, 0, 60);
+    vec3.set(camera.up,         0, 1, 0);
+}
+
+resetCamera();
 
 var canvas = document.getElementById("world");
 var glBoostContext = new GLBoost.GLBoostMiddleContext(canvas);
@@ -95,10 +99,10 @@ loadShapeGeometry('knot');
 
 function createSphere() {
     return glBoostContext.createSphere(
-	    /*radius*/20,
-	    /* width segments */24,
-	    /* height segments */24,
-	    /* vertex color (not required, ignored if texture loaded?  */ null);
+	      /*radius*/20,
+	      /* width segments */24,
+	      /* height segments */24,
+	      /* vertex color (not required, ignored if texture loaded?  */ null);
 }
 
 
@@ -127,10 +131,10 @@ var directionalLight = glBoostContext.createDirectionalLight(directionalLightCol
 
 // WHITE LIGHT
 var directionalLight_white = glBoostContext.createDirectionalLight(
-        // color of the light:
-        new GLBoost.Vector3(1, 1, 1),
-        // direction of the light (x=-1 means light is at our right, pointing towards the left)
-        new GLBoost.Vector3(2.8, -2, -1));
+    // color of the light:
+    new GLBoost.Vector3(1, 1, 1),
+    // direction of the light (x=-1 means light is at our right, pointing towards the left)
+    new GLBoost.Vector3(2.8, -2, -1));
 
 
 var currentMajorModel = null;
@@ -156,7 +160,7 @@ function respondToChangeInModelSelection(event, ui) {
 
 function updateMaterial() {
     if (!material)
-	    material = glBoostContext.createClassicMaterial();
+	      material = glBoostContext.createClassicMaterial();
     
     // AMBIENT
     var colorInTextRepr = ($('#colorSelectorAmbient div').css('backgroundColor'));
@@ -168,8 +172,8 @@ function updateMaterial() {
     var efficiency = parseFloat($("#slider-ks-value").html());
     shader.efficiencySpecular = efficiency;
     material.ambientColor = new GLBoost.Vector4(colorAsArray[0],
-						                        colorAsArray[1],
-						                        colorAsArray[2], 1.0);
+						                                    colorAsArray[1],
+						                                    colorAsArray[2], 1.0);
 
     var colorInTextRepr = ($('#colorSelectorSpecular div').css('backgroundColor'));
     var colorAsArray = parseCSSColor(colorInTextRepr);
@@ -181,10 +185,10 @@ function updateMaterial() {
     case 'moon':
         var texture = glBoostContext.createTexture('resources/moon.gif');
         material.setTexture(texture);
-	    $('.conditional.explanation').css('display', 'block');
+	      $('.conditional.explanation').css('display', 'block');
         break;
     default:
-	    $('.conditional.colorSelector').css('display', 'block');
+	      $('.conditional.colorSelector').css('display', 'block');
         var colorInTextRepr = ($('#colorSelectorDiffuse div').css('backgroundColor'));
         var colorAsArray = parseCSSColor(colorInTextRepr);
         material.diffuseColor = new GLBoost.Vector4(colorAsArray[0], colorAsArray[1], colorAsArray[2], 1.0);
@@ -247,8 +251,8 @@ $('#colorSelectorAmbient').ColorPicker({
         var colorInTextRepr = ($('#colorSelectorAmbient div').css('backgroundColor'));
         var colorAsArray = parseCSSColor(colorInTextRepr);
         material.ambientColor = new GLBoost.Vector4(colorAsArray[0],
-						                            colorAsArray[1],
-						                            colorAsArray[2], 1.0);
+						                                        colorAsArray[1],
+						                                        colorAsArray[2], 1.0);
         material.shaderInstance = shader;
     },
     onBeforeShow: function (colpkr) {
@@ -338,8 +342,8 @@ $('#colorSelectorDiffuse').ColorPicker({
         var colorInTextRepr = ($('#colorSelectorDiffuse div').css('backgroundColor'));
         var colorAsArray = parseCSSColor(colorInTextRepr);
         material.diffuseColor = new GLBoost.Vector4(colorAsArray[0],
-						                            colorAsArray[1],
-						                            colorAsArray[2], 1.0);
+						                                        colorAsArray[1],
+						                                        colorAsArray[2], 1.0);
         material.shaderInstance = shader;
     },
     onBeforeShow: function (colpkr) {
@@ -369,8 +373,8 @@ $('#colorSelectorSpecular').ColorPicker({
         var colorInTextRepr = ($('#colorSelectorSpecular div').css('backgroundColor'));
         var colorAsArray = parseCSSColor(colorInTextRepr);
         material.specularColor = new GLBoost.Vector4(colorAsArray[0],
-						                             colorAsArray[1],
-						                             colorAsArray[2], 1.0);
+						                                         colorAsArray[1],
+						                                         colorAsArray[2], 1.0);
         material.shaderInstance = shader;
     },
     onBeforeShow: function (colpkr) {
@@ -413,3 +417,8 @@ var render = function() {
 };
 
 render();
+
+$("button.reset").click(function(event) {
+    event.preventDefault();
+    resetCamera();
+});
